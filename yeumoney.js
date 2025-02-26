@@ -1,3 +1,16 @@
+// ==UserScript==
+// @name         Yeumoney Traffic Script
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Gửi mã kiểm tra và thao tác với traffic từ Yeumoney
+// @author       Hibandd122
+// @match        https://yeumoney.com/*
+// @grant        GM_xmlhttpRequest
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_log
+// @run-at       document-end
+// ==/UserScript==
 const keywords = ["vn88", "188bet", "w88", "m88", "fb88", "bk8", "v9bet"];
 var maContainer = document.createElement("div");
 maContainer.id = "maContainer";
@@ -287,7 +300,6 @@ function sendSecondRequest(codexnValue) {
             } else {
                 const ymnclkMatch = responseText.match(/sessionStorage.setItem\("ymnclk",\s*(\d+)\)/);
                 if (ymnclkMatch && ymnclkMatch[1]) {
-                    setTimeout(() => localStorage.removeItem("URL_Goc_Vuatraffic"), 2000);
                     sessionStorage.setItem("ymnclk", ymnclkMatch[1]);
                     console.log("Lưu ymnclk:", ymnclkMatch[1]);
                     sendFirstRequest();
@@ -328,7 +340,6 @@ function sendSecondFinal(codexnValue) {
             } else {
                 const ymnclkMatch = responseText.match(/sessionStorage.setItem\("ymnclk",\s*(\d+)\)/);
                 if (ymnclkMatch && ymnclkMatch[1]) {
-                    setTimeout(() => localStorage.removeItem("URL_Goc_Vuatraffic"), 2000);
                     sessionStorage.setItem("ymnclk", ymnclkMatch[1]);
                     console.log("Lưu ymnclk:", ymnclkMatch[1]);
                     sendSecondFinal(codexnValue);
