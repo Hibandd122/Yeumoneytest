@@ -1,16 +1,3 @@
-// ==UserScript==
-// @name         Yeumoney Traffic Script
-// @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Gửi mã kiểm tra và thao tác với traffic từ Yeumoney
-// @author       Hibandd122
-// @match        https://yeumoney.com/*
-// @grant        GM_xmlhttpRequest
-// @grant        GM_setValue
-// @grant        GM_getValue
-// @grant        GM_log
-// @run-at       document-end
-// ==/UserScript==
 const keywords = ["vn88", "188bet", "w88", "m88", "fb88", "bk8", "v9bet"];
 var maContainer = document.createElement("div");
 maContainer.id = "maContainer";
