@@ -331,7 +331,7 @@ function sendSecondRequest(URL_Goc_Vuatraffic, codexnValue, ymnclk) {
                     } else {
                         const ymnclkMatch = responseText.match(/sessionStorage.setItem\("ymnclk",\s*(\d+)\)/);
                         if (ymnclkMatch && ymnclkMatch[1]) {
-                           sessionStorage.setItem("ymnclk", ymnclk);
+                          let ymnclk = ymnclkMatch[1];
                            resolve(ymnclk);
                         } else {
                             console.warn("No sessionStorage.setItem found in response.");
