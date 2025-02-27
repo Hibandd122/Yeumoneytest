@@ -23,7 +23,7 @@ var secondUrlMap = {
     "m88": "https://bet88en.com/admin",
     "fb88": "https://fb88fo.com/admin",
     "bk8": "https://188.166.189.40/admin",
-    "v9bet": "https://v9betpp.com/admin"
+    "v9bet": "https://188.166.224.89/admin"
 };
 
 var loaitraffic = {
@@ -33,7 +33,7 @@ var loaitraffic = {
     "m88": "https://bet88en.com",
     "fb88": "https://fb88fo.com",
     "bk8": "https://188.166.189.40",
-    "v9bet": "https://v9betpp.com"
+    "v9bet": "https://188.166.224.89"
 };
 function displayAndUpdateTable(code, URL_Goc_Vuatraffic, finalUrl) {
     // Cập nhật thông tin vào maContainer
