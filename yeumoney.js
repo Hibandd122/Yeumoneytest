@@ -275,12 +275,10 @@ function handleTrafficType(tk1Text) {
 
 findImageAndProcess()
 
-function sendFirstRequest() {
+function sendFirstRequest(ymnclk) {
     return new Promise((resolve, reject) => {
-        const CLK = "&clk=" + (sessionStorage.getItem("ymnclk") || "null");
-        const d = new Date();
-        const random = d.getTime();
-        const data = `data=${random},https://www.google.com/,undefined,IOS900,hidden,null${CLK}`;
+        const random = Date.now();
+        const data = `data=${random},https://www.google.com/,undefined,IOS900,hidden,null&clk=${ymnclk}`;
         const url1 = `https://traffic-user.net/GET_VUATRAFFIC.php?${data}`;
 
         const xhr = new XMLHttpRequest();
@@ -391,9 +389,9 @@ function sendCodeToCheck(code) {
 
 async function startBypass(URL_Goc_Vuatraffic) {
     try {
-        const codexnValue = await sendFirstRequest();
+        const codexnValue = await sendFirstRequest(null);
         const ymnclk = await sendSecondRequest(URL_Goc_Vuatraffic, codexnValue, null)
-        const codexnValue2 = await sendFirstRequest();
+        const codexnValue2 = await sendFirstRequest(ymnclk);
         const url = URL_Goc_Vuatraffic + "/admin";
         const result = await sendSecondRequest(url, codexnValue2, ymnclk);
         return result;
