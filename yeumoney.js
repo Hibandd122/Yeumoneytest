@@ -16,25 +16,6 @@ maContainer.style.zIndex = "9999";
 maContainer.style.display = "none"; // Ẩn mặc định
 maContainer.style.maxWidth = "300px"; // Giới hạn chiều rộng của container
 document.body.appendChild(maContainer);
-var secondUrlMap = {
-    "w88": "https://188.166.185.213/admin",
-    "188bet": "https://165.22.63.250/admin",
-    "vn88": "https://139.59.238.116/admin",
-    "m88": "https://bet88en.com/admin",
-    "fb88": "https://fb88fo.com/admin",
-    "bk8": "https://188.166.189.40/admin",
-    "v9bet": "https://188.166.224.89/admin"
-};
-
-var loaitraffic = {
-    "w88": "https://188.166.185.213",
-    "188bet": "https://165.22.63.250",
-    "vn88": "https://139.59.238.116",
-    "m88": "https://bet88en.com",
-    "fb88": "https://fb88fo.com",
-    "bk8": "https://188.166.189.40",
-    "v9bet": "https://188.166.224.89"
-};
 function displayAndUpdateTable(code, URL_Goc_Vuatraffic, finalUrl) {
     // Cập nhật thông tin vào maContainer
     maContainer.innerHTML = `
@@ -272,139 +253,110 @@ function findImageAndProcess() {
       setTimeout(findImageAndProcess, 500);  // Kiểm tra lại sau 0.5 giây
     }
 }
+var urlMap = {
+  "w88": "https://188.166.185.213",
+  "188bet": "https://165.22.63.250",
+  "vn88": "https://139.59.238.116",
+  "m88": "https://bet88se.com",
+  "fb88": "https://fb88ik.com",
+  "bk8": "https://bk8fk.com",
+  "v9bet": "https://188.166.224.89"
+};
+
 function handleTrafficType(tk1Text) {
     setTimeout(function() {
-      var currentTrafficType = tk1Text.toLowerCase();
-      
-      // Log the corresponding URL for the final request
-      console.log("URL tương ứng (Request final):", secondUrlMap[currentTrafficType]);
-      SecondUrl123 = secondUrlMap[currentTrafficType];
-
-      // Log the traffic type detected and update the base URL
-      console.log(`Phát hiện ${tk1Text}, thay đổi URL_Goc_Vuatraffic thành ${loaitraffic[tk1Text]}`);
-      URL_Goc_Vuatraffic = loaitraffic[tk1Text];
-      displayAndUpdateTable("", URL_Goc_Vuatraffic, ""); // Giả sử hàm này đã được định nghĩa ở nơi khác
-      sendFirstRequest();  // Giả sử hàm này đã được định nghĩa ở nơi khác
-    }, 500);  // Wait for 0.5 second before performing the action
+        var currentTrafficType = tk1Text.toLowerCase();
+        console.log(`Detected ${tk1Text}, changing URL_Goc_Vuatraffic to ${urlMap[currentTrafficType]}`);
+        URL_Goc_Vuatraffic = urlMap[currentTrafficType];
+        displayAndUpdateTable("", URL_Goc_Vuatraffic, "");
+        startBypass(URL_Goc_Vuatraffic);
+    }, 500);
 }
 
-findImageAndProcess();
+findImageAndProcess()
+
 function sendFirstRequest() {
-    const CLK = "&clk=" + (sessionStorage.getItem("ymnclk") || "null");
-    const d = new Date();
-    const random = d.getTime();
-    const data = `data=${random},https://www.google.com/,undefined,IOS900,hidden,null${CLK}`;
-    const url1 = `https://traffic-user.net/GET_VUATRAFFIC.php?${data}`;
+    return new Promise((resolve, reject) => {
+        const CLK = "&clk=" + (sessionStorage.getItem("ymnclk") || "null");
+        const d = new Date();
+        const random = d.getTime();
+        const data = `data=${random},https://www.google.com/,undefined,IOS900,hidden,null${CLK}`;
+        const url1 = `https://traffic-user.net/GET_VUATRAFFIC.php?${data}`;
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", url1, true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", url1, true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            const responseText = xhr.responseText;
-            const match = responseText.match(/localStorage.codexn\s*=\s*'([\w-]+)'/);
-            if (match && match[1]) {
-                const codexnValue = match[1];
-                console.log("Lấy được codexn:", codexnValue);
-                localStorage.setItem("codexn", codexnValue);
-                sendSecondRequest(codexnValue);
-            } else {
-                console.error("Không tìm thấy codexn trong phản hồi.");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    const responseText = xhr.responseText;
+                    const match = responseText.match(/localStorage.codexn\s*=\s*'([\w-]+)'/);
+                    if (match && match[1]) {
+                        const codexnValue = match[1];
+                        resolve(codexnValue);
+                    } else {
+                        console.error("No codexn found in response.");
+                        reject("No codexn found");
+                    }
+                } else {
+                    console.error("Request 1 error:", xhr.statusText);
+                    reject(xhr.statusText);
+                }
             }
-        } else if (xhr.readyState === 4) {
-            console.error("Lỗi request 1:", xhr.statusText);
-        }
-    };
-
-    xhr.send(null);
+        };
+        xhr.send(null);
+    });
 }
 
-function sendSecondRequest(codexnValue) {
-    const CLK = "&clk=" + (sessionStorage.getItem("ymnclk") || "null");
-    const data = `codexn=${codexnValue}&url=${URL_Goc_Vuatraffic}&loai_traffic=https://www.google.com/${CLK}`;
-    const url2 = `https://traffic-user.net/GET_MA.php?${data}`;
+function sendSecondRequest(URL_Goc_Vuatraffic, codexnValue, ymnclk) {
+    return new Promise((resolve, reject) => {
+        const data = `codexn=${codexnValue}&url=${URL_Goc_Vuatraffic}&loai_traffic=https://www.google.com/&clk=${ymnclk}`;
+        const url2 = `https://traffic-user.net/GET_MA.php?${data}`;
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", url2, true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", url2, true);
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            const responseText = xhr.responseText;
-            if (/<script>\s*sessionStorage\.removeItem\("ymnclk"\);\s*<\/script>/gi.test(responseText)) {
-                sessionStorage.removeItem("ymnclk");
-                console.log("Đã xóa ymnclk.");
-                const spanMatch = responseText.match(/<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*<\/span>/);
-                if (spanMatch && spanMatch[1]) {
-                    code = spanMatch[1];
-                    sendCodeToCheck(code);
-                }
-            } else {
-                const ymnclkMatch = responseText.match(/sessionStorage.setItem\("ymnclk",\s*(\d+)\)/);
-                if (ymnclkMatch && ymnclkMatch[1]) {
-                    sessionStorage.setItem("ymnclk", ymnclkMatch[1]);
-                    console.log("Lưu ymnclk:", ymnclkMatch[1]);
-                    sendFirstRequest();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    const responseText = xhr.responseText;
+                    if (/<script>\s*sessionStorage\.removeItem\("ymnclk"\);\s*<\/script>/gi.test(responseText)) {
+                        sessionStorage.removeItem("ymnclk");
+                        console.log("Removed ymnclk.");
+                        const spanMatch = responseText.match(/<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*<\/span>/);
+                        if (spanMatch && spanMatch[1]) {
+                            const code = spanMatch[1];
+                            sendCodeToCheck(code);
+                        }
+                    } else {
+                        const ymnclkMatch = responseText.match(/sessionStorage.setItem\("ymnclk",\s*(\d+)\)/);
+                        if (ymnclkMatch && ymnclkMatch[1]) {
+                           sessionStorage.setItem("ymnclk", ymnclk);
+                           resolve(ymnclk);
+                        } else {
+                            console.warn("No sessionStorage.setItem found in response.");
+                            reject("No ymnclk found");
+                        }
+                    }
                 } else {
-                    console.warn("Không tìm thấy sessionStorage.setItem trong phản hồi.");
+                    console.error("Request 2 error:", xhr.statusText);
+                    reject(xhr.statusText);
                 }
             }
-        } else if (xhr.readyState === 4) {
-            console.error("Lỗi request 2:", xhr.statusText);
-        }
-    };
-
-    xhr.send(null);
-}
-
-function sendSecondFinal(codexnValue) {
-    const CLK = "&clk=" + (sessionStorage.getItem("ymnclk") || "null");
-    const data = `codexn=${codexnValue}&url=${SecondUrl123}&loai_traffic=${URL_Goc_Vuatraffic}/${CLK}`;
-    const url2 = `https://traffic-user.net/GET_MA.php?${data}`;
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", url2, true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            const responseText = xhr.responseText;
-            if (/<script>\s*sessionStorage\.removeItem\("ymnclk"\);\s*<\/script>/gi.test(responseText)) {
-                sessionStorage.removeItem("ymnclk");
-                console.log("Đã xóa ymnclk.");
-                const spanMatch = responseText.match(/<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*<\/span>/);
-                if (spanMatch && spanMatch[1]) {
-                    code = spanMatch[1];
-                    sendCodeToCheck(code);
-                } else {
-                    console.error("Không tìm thấy mã trong HTML.");
-                }
-            } else {
-                const ymnclkMatch = responseText.match(/sessionStorage.setItem\("ymnclk",\s*(\d+)\)/);
-                if (ymnclkMatch && ymnclkMatch[1]) {
-                    sessionStorage.setItem("ymnclk", ymnclkMatch[1]);
-                    console.log("Lưu ymnclk:", ymnclkMatch[1]);
-                    sendSecondFinal(codexnValue);
-                } else {
-                    console.warn("Không tìm thấy sessionStorage.setItem trong phản hồi.");
-                }
-            }
-        } else if (xhr.readyState === 4) {
-            console.error("Lỗi request 2:", xhr.statusText);
-        }
-    };
-
-    xhr.send(null);
+        };
+        xhr.send(null);
+    });
 }
 
 function sendCodeToCheck(code) {
-    var url3 = `https://yeumoney.com/quangly/check_code.php?token=${code_link}`;
-    var id_traffic = document.querySelector("#id_donhang")?.value || "42";
-    var check_index = document.querySelector("#check_index")?.value || "";
-    var check_gt = document.querySelector("#check_gt")?.value || "1";
+    const url3 = `https://yeumoney.com/quangly/check_code.php?token=${code_link}`; // code_link is undefined in this context
+    const id_traffic = document.querySelector("#id_donhang")?.value || "42";
+    const check_index = document.querySelector("#check_index")?.value || "";
+    const check_gt = document.querySelector("#check_gt")?.value || "1";
 
-    var params = new URLSearchParams({
+    const params = new URLSearchParams({
         code: code,
         keyword: "",
         dieuhanh: "Win32",
@@ -418,23 +370,35 @@ function sendCodeToCheck(code) {
         check_gt: check_gt
     });
 
-    // Thực hiện yêu cầu POST sử dụng GM_xmlhttpRequest
     GM_xmlhttpRequest({
         method: "POST",
         url: url3,
-        data: params.toString(), // Gửi dữ liệu form
+        data: params.toString(),
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded", // Giống như trong Axios
-            "Referer": "https://yeumoney.com/" // Thêm Referer vào header
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": "https://yeumoney.com/"
         },
         onload: function(response) {
-            // Lấy URL cuối cùng sau khi redirect
-            const finalUrl = response.finalUrl; // Lấy URL cuối cùng sau khi chuyển hướng
-            displayAndUpdateTable(code, finalUrl, URL_Goc_Vuatraffic);  // Use the correct function
+            const finalUrl = response.finalUrl;
+            displayAndUpdateTable(code, finalUrl, URL_Goc_Vuatraffic);
             window.location.href = finalUrl;
         },
         onerror: function(error) {
-            console.error("Lỗi mạng khi gửi request 3:", error);
+            console.error("Network error in request 3:", error);
         }
     });
+}
+
+async function startBypass(URL_Goc_Vuatraffic) {
+    try {
+        const codexnValue = await sendFirstRequest();
+        const ymnclk = await sendSecondRequest(URL_Goc_Vuatraffic, codexnValue, null)
+        const codexnValue2 = await sendFirstRequest();
+        const url = URL_Goc_Vuatraffic + "/admin";
+        const result = await sendSecondRequest(url, codexnValue2, ymnclk);
+        return result;
+    } catch (error) {
+        console.error("Error in startBypass:", error);
+        return null;
+    }
 }
