@@ -145,7 +145,7 @@ var urlMap = {
   "m88": "https://bet88se.com",
   "fb88": "https://fb88ik.com",
   "bk8": "https://bk8fk.com",
-  "v9bet": "https://188.166.224.89"
+  "v9bet": "https://v9betog.com"
 };
 
 function handleTrafficType(tk1Text) {
