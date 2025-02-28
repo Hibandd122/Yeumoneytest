@@ -144,7 +144,7 @@ var urlMap = {
   "vn88": "https://139.59.238.116",
   "m88": "https://bet88se.com",
   "fb88": "https://fb88ik.com",
-  "bk8": "https://bk8fk.com",
+  "bk8": "https://188.166.189.40",
   "v9bet": "https://v9betog.com"
 };
 
