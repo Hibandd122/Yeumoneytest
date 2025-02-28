@@ -1,8 +1,7 @@
 (function() {
     'use strict';
 
-    let Text123 = ""; // Global keyword variable
-    const keywords = ["vn88", "188bet", "w88", "m88", "fb88", "bk8", "v9bet"];
+    let Text123 = "";
     var maContainer = document.createElement("div");
     maContainer.id = "maContainer";
     maContainer.style.cssText = `
@@ -12,35 +11,43 @@
         width: 100vw;
         height: 100vh;
         background-color: #f4f6f9;
-        padding: 50px;
+        padding: 20px;
         font-size: 28px;
         font-weight: bold;
         color: #333;
         z-index: 9999;
-        display: block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         overflow: auto;
         text-align: center;
     `;
+    
     document.body.appendChild(maContainer);
-
+    
     function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalUrl) {
         maContainer.innerHTML = '';
-
+    
+        const tableContainer = document.createElement("div");
+        tableContainer.style.cssText = `
+            width: 95%;
+            max-width: 1400px;
+            overflow-x: auto;
+        `;
+    
         const table = document.createElement("table");
         table.style.cssText = `
-            width: 80%;
-            max-width: 1200px;
-            margin: auto;
+            width: 100%;
             border-collapse: collapse;
             font-family: 'Arial', sans-serif;
             background-color: #fff;
-            font-size: 24px;
+            font-size: 22px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             border-radius: 12px;
             overflow: hidden;
         `;
-
+    
         const headers = ["Status", "Mã", "Từ khoá", "Loại Traffic"];
         const headerRow = document.createElement("tr");
         headers.forEach(headerText => {
@@ -49,72 +56,191 @@
             th.style.cssText = `
                 background: linear-gradient(135deg, #3498db, #2ecc71);
                 color: #fff;
-                padding: 18px;
+                padding: 20px;
                 text-transform: uppercase;
+                white-space: nowrap;
+                min-width: 200px;
+                word-break: break-word;
             `;
             headerRow.appendChild(th);
         });
         table.appendChild(headerRow);
-
+    
         const dataRow = document.createElement("tr");
         [status, code || "N/A", keyword || "N/A", URL_Goc_Vuatraffic || "N/A"].forEach((cellText, index) => {
             const td = document.createElement("td");
             td.textContent = cellText;
             td.style.cssText = `
-                padding: 20px;
+                padding: 15px;
                 border: 1px solid #ddd;
                 background-color: ${index % 2 === 0 ? "#f9f9f9" : "#fff"};
-                font-size: 24px;
+                font-size: 20px;
                 font-weight: 600;
+                min-width: 200px;
+                max-width: 400px;
+                word-break: break-word;
             `;
             dataRow.appendChild(td);
         });
         table.appendChild(dataRow);
-
+    
+        // Final URL row
         const finalUrlRow = document.createElement("tr");
         const finalUrlTd = document.createElement("td");
         finalUrlTd.colSpan = 4;
-        finalUrlTd.textContent = `Final URL: ${finalUrl || "N/A"}`;
         finalUrlTd.style.cssText = `
             padding: 20px;
             border: 1px solid #ddd;
-            background-color: #ffeb3b;
-            color: #d32f2f;
-            font-size: 24px;
+            background: linear-gradient(135deg, #3498db,rgb(255, 255, 255));
+            color:rgb(0, 0, 0);
+            font-size: 22px;
             font-weight: 600;
             text-align: center;
+            word-break: break-word;
         `;
+    
+        const urlText = document.createElement("div");
+        urlText.innerHTML = `<span style="color:rgb(255, 0, 0);">Final URL:</span> ${finalUrl || "N/A"}`;
+        finalUrlTd.appendChild(urlText);
+    
+        if (finalUrl) {
+            const copyButton = document.createElement("button");
+            copyButton.textContent = "Copy";
+            copyButton.style.cssText = `
+                margin-top: 10px;
+                padding: 8px 20px;
+                background-color:rgb(255, 0, 0);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 18px;
+                transition: background-color 0.3s;
+            `;
+    
+            copyButton.addEventListener("mouseover", () => {
+                copyButton.style.backgroundColor = "#636e72";
+            });
+            copyButton.addEventListener("mouseout", () => {
+                copyButton.style.backgroundColor = "#7f8c8d";
+            });
+            copyButton.addEventListener("click", () => {
+                navigator.clipboard.writeText(finalUrl)
+                    .then(() => {
+                        copyButton.textContent = "Copied!";
+                        setTimeout(() => {
+                            copyButton.textContent = "Copy";
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error("Failed to copy: ", err);
+                    });
+            });
+    
+            finalUrlTd.appendChild(copyButton);
+        }
+    
         finalUrlRow.appendChild(finalUrlTd);
         table.appendChild(finalUrlRow);
-
-        maContainer.appendChild(table);
-
+    
+        tableContainer.appendChild(table);
+        maContainer.appendChild(tableContainer);
+    
+        const style = document.createElement("style");
+        style.textContent = `
+        @media (max-width: 1024px) {
+            th, td {
+                min-width: 150px !important;
+                font-size: 20px !important;
+                padding: 12px !important;
+            }
+            table {
+                font-size: 20px !important;
+            }
+        }
+        @media (max-width: 900px) {
+            th, td {
+                min-width: 120px !important;
+                font-size: 18px !important;
+                padding: 10px !important;
+            }
+            table {
+                font-size: 18px !important;
+            }
+        }
+        @media (max-width: 768px) {
+            th, td {
+                min-width: 100px !important;
+                font-size: 17px !important;
+                padding: 8px !important;
+            }
+            table {
+                font-size: 17px !important;
+            }
+        }
+        @media (max-width: 640px) {
+            th, td {
+                min-width: 80px !important;
+                font-size: 16px !important;
+                padding: 8px !important;
+            }
+            table {
+                font-size: 16px !important;
+            }
+        }
+        @media (max-width: 480px) {
+            th, td {
+                min-width: 60px !important;
+                font-size: 14px !important;
+                padding: 6px !important;
+            }
+            table {
+                font-size: 14px !important;
+            }
+        }
+        @media (max-width: 360px) {
+            th, td {
+                min-width: 50px !important;
+                font-size: 12px !important;
+                padding: 5px !important;
+            }
+            table {
+                font-size: 12px !important;
+            }
+        }
+    `;
+    
+        document.head.appendChild(style);
+    
         const label = document.createElement("label");
-        label.style.display = "block";
-        label.style.marginTop = "20px";
-        label.style.fontSize = "20px";
-        label.style.color = "#333";
+        label.style.cssText = `
+            display: block;
+            margin-top: 20px;
+            font-size: 20px;
+            color: #333;
+        `;
         label.textContent = "Tự động chuyển hướng: ";
+    
         if (localStorage.getItem("autoRedirect") === null) {
             localStorage.setItem("autoRedirect", "true");
         }
-
+    
         const autoRedirectCheckbox = document.createElement("input");
         autoRedirectCheckbox.type = "checkbox";
         autoRedirectCheckbox.checked = localStorage.getItem("autoRedirect") === "true";
         autoRedirectCheckbox.addEventListener("change", () => {
             localStorage.setItem("autoRedirect", autoRedirectCheckbox.checked);
         });
-
+    
         label.appendChild(autoRedirectCheckbox);
         maContainer.appendChild(label);
     }
+      
 
     var URL_Goc_Vuatraffic = "";
     var code_link = "";
-    var finalUrl = ""; // Added finalUrl declaration
+    var finalUrl = "";
 
-    // Lấy mã liên kết từ script
     var scriptElements = document.getElementsByTagName("script");
     for (var script of scriptElements) {
         var match = script.textContent.match(/var code_link = \"(.*?)\";/);
@@ -131,13 +257,12 @@
             if (tk1Element) {
                 const tk1Text = tk1Element.textContent.trim();
                 if (tk1Text) {
-                    console.log("Lấy tk1Text:", tk1Text);
-                    Text123 = tk1Text; // Update global Text123
+                    Text123 = tk1Text;
                     handleTrafficType(tk1Text);
                     return;
                 }
             }
-            setTimeout(checkTK1, 500); // Added delay
+            setTimeout(checkTK1);
         }
         checkTK1();
     }
@@ -162,8 +287,10 @@
             } else {
                 displayAndUpdateTable("Lỗi", "", Text123, "", "Không tìm thấy URL");
                 sendErrorToDiscord("Invalid Traffic Type", `No URL for ${currentTrafficType}`);
+                location.reload(true);
+
             }
-        }, 500);
+        });
     }
 
     function sendFirstRequest(ymnclk) {
@@ -192,6 +319,8 @@
                         displayAndUpdateTable("Lỗi HTTP", "", Text123, URL_Goc_Vuatraffic, finalUrl);
                         sendErrorToDiscord("HTTP Error", xhr.statusText);
                         reject(new Error(xhr.statusText));
+                        location.reload(true);
+
                     }
                 }
             };
@@ -233,6 +362,8 @@
                         displayAndUpdateTable("Lỗi HTTP", "", Text123, URL_Goc_Vuatraffic, finalUrl);
                         sendErrorToDiscord("HTTP Error", xhr.statusText);
                         reject(new Error(xhr.statusText));
+                        location.reload(true);
+
                     }
                 }
             };
@@ -278,6 +409,8 @@
             onerror: function(error) {
                 displayAndUpdateTable("Lỗi check code", code, Text123, URL_Goc_Vuatraffic, finalUrl);
                 sendErrorToDiscord("Check Code Error", error.toString());
+                location.reload(true);
+
             }
         });
     }
@@ -309,6 +442,8 @@
         } catch (error) {
             displayAndUpdateTable("Lỗi", code, Text123, URL_Goc_Vuatraffic, "Không lấy được URL");
             sendErrorToDiscord("Bypass Error", error.message || "Unknown error");
+            location.reload(true);
+
         }
     }
 
