@@ -1,4 +1,4 @@
-(function() {
+function() {
     'use strict';
 
     let Text123 = "";
@@ -10,232 +10,365 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: #f4f6f9;
+        background: linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201));
         padding: 20px;
+        font-family: 'Segoe UI', 'Arial', sans-serif;
         font-size: 28px;
-        font-weight: bold;
-        color: #333;
+        font-weight: 600;
+        color: #4a3467;
         z-index: 9999;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
-        overflow: auto;
+        overflow-y: auto;
         text-align: center;
+        box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05);
+        transition: background 0.3s ease;
     `;
-    
+
     document.body.appendChild(maContainer);
-    
+
     function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalUrl) {
         maContainer.innerHTML = '';
-    
+
         const tableContainer = document.createElement("div");
         tableContainer.style.cssText = `
             width: 95%;
             max-width: 1400px;
             overflow-x: auto;
+            padding: 10px;
         `;
-    
+
+        const rainbowWrapper = document.createElement("div");
+        rainbowWrapper.style.cssText = `
+            padding: 15px;
+            background: #fff;
+            border: 8px solid;
+            border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        `;
+
         const table = document.createElement("table");
         table.style.cssText = `
             width: 100%;
-            border-collapse: collapse;
-            font-family: 'Arial', sans-serif;
-            background-color: #fff;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background-color: #f7fafc;
             font-size: 22px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 15px;
             overflow: hidden;
         `;
-    
-        const headers = ["Status", "Mã", "Từ khoá", "Loại Traffic"];
+
+        const headers = [
+            { text: "Status", icon: "📊" },
+            { text: "Mã", icon: "🔑" },
+            { text: "Từ khoá", icon: "🔍" },
+            { text: "Loại Traffic", icon: "🚦" }
+        ];
         const headerRow = document.createElement("tr");
-        headers.forEach(headerText => {
+        headers.forEach(header => {
             const th = document.createElement("th");
-            th.textContent = headerText;
+            th.innerHTML = `${header.icon} ${header.text}`;
             th.style.cssText = `
-                background: linear-gradient(135deg, #3498db, #2ecc71);
-                color: #fff;
+                background: linear-gradient(135deg, #1e90ff, #00ced1);
+                color: #ffffff;
                 padding: 20px;
                 text-transform: uppercase;
+                letter-spacing: 1.5px;
+                font-weight: 700;
                 white-space: nowrap;
                 min-width: 200px;
-                word-break: break-word;
+                border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+                transition: background 0.3s ease;
             `;
+            th.addEventListener("mouseover", () => {
+                th.style.background = "linear-gradient(135deg, #00ced1, #1e90ff)";
+            });
+            th.addEventListener("mouseout", () => {
+                th.style.background = "linear-gradient(135deg, #1e90ff, #00ced1)";
+            });
             headerRow.appendChild(th);
         });
         table.appendChild(headerRow);
-    
+
         const dataRow = document.createElement("tr");
         [status, code || "N/A", keyword || "N/A", URL_Goc_Vuatraffic || "N/A"].forEach((cellText, index) => {
             const td = document.createElement("td");
             td.textContent = cellText;
             td.style.cssText = `
-                padding: 15px;
-                border: 1px solid #ddd;
-                background-color: ${index % 2 === 0 ? "#f9f9f9" : "#fff"};
+                padding: 18px;
+                border-bottom: 1px solid #e0e0e0;
+                background-color: ${index % 2 === 0 ? "#edf2f7" : "#f7fafc"};
                 font-size: 20px;
-                font-weight: 600;
+                font-weight: 500;
                 min-width: 200px;
                 max-width: 400px;
                 word-break: break-word;
+                color: #2d3748;
+                transition: background-color 0.3s ease;
             `;
+            td.addEventListener("mouseover", () => {
+                td.style.backgroundColor = "#e2e8f0";
+            });
+            td.addEventListener("mouseout", () => {
+                td.style.backgroundColor = index % 2 === 0 ? "#edf2f7" : "#f7fafc";
+            });
             dataRow.appendChild(td);
         });
         table.appendChild(dataRow);
-    
-        // Final URL row
+
         const finalUrlRow = document.createElement("tr");
         const finalUrlTd = document.createElement("td");
         finalUrlTd.colSpan = 4;
         finalUrlTd.style.cssText = `
-            padding: 20px;
-            border: 1px solid #ddd;
-            background: linear-gradient(135deg, #3498db,rgb(255, 255, 255));
-            color:rgb(0, 0, 0);
+            padding: 25px;
+            background: linear-gradient(135deg, #f7fafc, #e6fffa);
+            color: #1a202c;
             font-size: 22px;
             font-weight: 600;
             text-align: center;
             word-break: break-word;
+            border-top: 2px dashed #b2f5ea;
         `;
-    
+
         const urlText = document.createElement("div");
-        urlText.innerHTML = `<span style="color:rgb(255, 0, 0);">Final URL:</span> ${finalUrl || "N/A"}`;
+        urlText.innerHTML = `<span style="color:rgb(0, 0, 0); font-weight: 700;">🔗 Final URL:</span> ${finalUrl || "N/A"}`;
         finalUrlTd.appendChild(urlText);
-    
+
         if (finalUrl) {
             const copyButton = document.createElement("button");
-            copyButton.textContent = "Copy";
+            copyButton.innerHTML = "📋 Copy";
             copyButton.style.cssText = `
-                margin-top: 10px;
-                padding: 8px 20px;
-                background-color:rgb(255, 0, 0);
+                margin-top: 15px;
+                padding: 10px 25px;
+                background-color:rgb(0, 255, 34);
                 color: white;
                 border: none;
-                border-radius: 5px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-size: 18px;
-                transition: background-color 0.3s;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
             `;
-    
             copyButton.addEventListener("mouseover", () => {
-                copyButton.style.backgroundColor = "#636e72";
+                copyButton.style.backgroundColor = "#00FF22";
+                copyButton.style.transform = "translateY(-2px)";
             });
             copyButton.addEventListener("mouseout", () => {
-                copyButton.style.backgroundColor = "#7f8c8d";
+                copyButton.style.backgroundColor = "#00FF22";
+                copyButton.style.transform = "translateY(0)";
             });
             copyButton.addEventListener("click", () => {
                 navigator.clipboard.writeText(finalUrl)
                     .then(() => {
-                        copyButton.textContent = "Copied!";
+                        copyButton.innerHTML = "✅ Copied!";
+                        copyButton.style.backgroundColor = "#00FF22"; /* Green when copied */
                         setTimeout(() => {
-                            copyButton.textContent = "Copy";
+                            copyButton.innerHTML = "📋 Copy";
+                            copyButton.style.backgroundColor = "#00FF22"; /* Back to blue */
                         }, 2000);
                     })
                     .catch(err => {
                         console.error("Failed to copy: ", err);
                     });
             });
-    
             finalUrlTd.appendChild(copyButton);
         }
-    
+
         finalUrlRow.appendChild(finalUrlTd);
         table.appendChild(finalUrlRow);
-    
-        tableContainer.appendChild(table);
+        rainbowWrapper.appendChild(table);
+        tableContainer.appendChild(rainbowWrapper);
         maContainer.appendChild(tableContainer);
-    
+
         const style = document.createElement("style");
         style.textContent = `
-        @media (max-width: 1024px) {
-            th, td {
-                min-width: 150px !important;
-                font-size: 20px !important;
-                padding: 12px !important;
+            :root {
+                --min-width: 200px;
+                --max-width-th: 300px;
+                --max-width-td: 400px;
+                --font-size-th: 22px;
+                --font-size-td: 20px;
+                --padding-th: 20px;
+                --padding-td: 18px;
+            }
+            th {
+                min-width: var(--min-width);
+                max-width: var(--max-width-th);
+                font-size: var(--font-size-th);
+                padding: var(--padding-th);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            td {
+                min-width: var(--min-width);
+                max-width: var(--max-width-td);
+                font-size: var(--font-size-td);
+                padding: var(--padding-td);
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             table {
-                font-size: 20px !important;
+                font-size: var(--font-size-th);
             }
-        }
-        @media (max-width: 900px) {
-            th, td {
-                min-width: 120px !important;
-                font-size: 18px !important;
-                padding: 10px !important;
+            @media (max-width: 1024px) {
+                :root {
+                    --min-width: 150px;
+                    --max-width-th: 250px;
+                    --max-width-td: 350px;
+                    --font-size-th: 20px;
+                    --font-size-td: 18px;
+                    --padding-th: 15px;
+                    --padding-td: 14px;
+                }
             }
-            table {
-                font-size: 18px !important;
+            @media (max-width: 768px) {
+                :root {
+                    --min-width: 120px;
+                    --max-width-th: 200px;
+                    --max-width-td: 300px;
+                    --font-size-th: 18px;
+                    --font-size-td: 16px;
+                    --padding-th: 12px;
+                    --padding-td: 10px;
+                }
             }
-        }
-        @media (max-width: 768px) {
-            th, td {
-                min-width: 100px !important;
-                font-size: 17px !important;
-                padding: 8px !important;
+            @media (max-width: 640px) {
+                :root {
+                    --min-width: 100px;
+                    --max-width-th: 180px;
+                    --max-width-td: 250px;
+                    --font-size-th: 16px;
+                    --font-size-td: 14px;
+                    --padding-th: 10px;
+                    --padding-td: 8px;
+                }
             }
-            table {
-                font-size: 17px !important;
+            @media (max-width: 480px) {
+                :root {
+                    --min-width: 80px;
+                    --max-width-th: 150px;
+                    --max-width-td: 200px;
+                    --font-size-th: 14px;
+                    --font-size-td: 12px;
+                    --padding-th: 8px;
+                    --padding-td: 6px;
+                }
             }
-        }
-        @media (max-width: 640px) {
-            th, td {
-                min-width: 80px !important;
-                font-size: 16px !important;
-                padding: 8px !important;
+            @media (max-width: 360px) {
+                :root {
+                    --min-width: 60px;
+                    --max-width-th: 120px;
+                    --max-width-td: 150px;
+                    --font-size-th: 12px;
+                    --font-size-td: 10px;
+                    --padding-th: 6px;
+                    --padding-td: 5px;
+                }
             }
-            table {
-                font-size: 16px !important;
+            @media (max-width: 280px) {
+                :root {
+                    --min-width: 50px;
+                    --max-width-th: 100px;
+                    --max-width-td: 120px;
+                    --font-size-th: 10px;
+                    --font-size-td: 9px;
+                    --padding-th: 4px;
+                    --padding-td: 3px;
+                }
             }
-        }
-        @media (max-width: 480px) {
-            th, td {
-                min-width: 60px !important;
-                font-size: 14px !important;
-                padding: 6px !important;
+            @media (max-width: 100px) {
+                :root {
+                    --min-width: 25px;
+                    --max-width-th: 50px;
+                    --max-width-td: 50px;
+                    --font-size-th: 8px;
+                    --font-size-td: 7px;
+                    --padding-th: 2px;
+                    --padding-td: 2px;
+                }
             }
-            table {
-                font-size: 14px !important;
-            }
-        }
-        @media (max-width: 360px) {
-            th, td {
-                min-width: 50px !important;
-                font-size: 12px !important;
-                padding: 5px !important;
-            }
-            table {
-                font-size: 12px !important;
-            }
-        }
-    `;
-    
+        `;
         document.head.appendChild(style);
-    
+
+        // Container for controls (checkbox and button)
+        const controlsContainer = document.createElement("div");
+        controlsContainer.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Space between checkbox and button */
+            margin-top: 25px;
+        `;
+
         const label = document.createElement("label");
         label.style.cssText = `
-            display: block;
-            margin-top: 20px;
             font-size: 20px;
-            color: #333;
+            color: #2d3748;
+            font-weight: 500;
         `;
-        label.textContent = "Tự động chuyển hướng: ";
-    
+        label.innerHTML = "🔄 Tự động chuyển hướng: ";
+
         if (localStorage.getItem("autoRedirect") === null) {
             localStorage.setItem("autoRedirect", "true");
         }
-    
+
         const autoRedirectCheckbox = document.createElement("input");
         autoRedirectCheckbox.type = "checkbox";
         autoRedirectCheckbox.checked = localStorage.getItem("autoRedirect") === "true";
+        autoRedirectCheckbox.style.cssText = `
+            margin-left: 10px;
+            transform: scale(1.5);
+            cursor: pointer;
+        `;
         autoRedirectCheckbox.addEventListener("change", () => {
             localStorage.setItem("autoRedirect", autoRedirectCheckbox.checked);
         });
-    
+
         label.appendChild(autoRedirectCheckbox);
-        maContainer.appendChild(label);
+
+        // New "Đổi nhiệm vụ" button
+        const changeTaskButton = document.createElement("button");
+        changeTaskButton.innerHTML = "🔄 Đổi nhiệm vụ";
+        changeTaskButton.style.cssText = `
+            padding: 10px 25px;
+            background-color: #e53e3e; /* Default red */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+        `;
+        changeTaskButton.addEventListener("mouseover", () => {
+            changeTaskButton.style.backgroundColor = "#c53030"; /* Darker red on hover */
+            changeTaskButton.style.transform = "translateY(-2px)";
+        });
+        changeTaskButton.addEventListener("mouseout", () => {
+            changeTaskButton.style.backgroundColor = "#e53e3e";
+            changeTaskButton.style.transform = "translateY(0)";
+        });
+        changeTaskButton.addEventListener("click", () => {
+            location.reload(true);
+        });
+
+        controlsContainer.appendChild(label);
+        controlsContainer.appendChild(changeTaskButton);
+        maContainer.appendChild(controlsContainer);
+
+        setInterval(() => {
+            if (localStorage.getItem("autoRedirect") === "true" && finalUrl && status === "Hoàn thành") {
+                window.location.href = finalUrl;
+            }
+        }, 500);
     }
-      
 
     var URL_Goc_Vuatraffic = "";
     var code_link = "";
@@ -288,7 +421,6 @@
                 displayAndUpdateTable("Lỗi", "", Text123, "", "Không tìm thấy URL");
                 sendErrorToDiscord("Invalid Traffic Type", `No URL for ${currentTrafficType}`);
                 location.reload(true);
-
             }
         });
     }
@@ -320,7 +452,6 @@
                         sendErrorToDiscord("HTTP Error", xhr.statusText);
                         reject(new Error(xhr.statusText));
                         location.reload(true);
-
                     }
                 }
             };
@@ -345,8 +476,9 @@
                             sessionStorage.removeItem("ymnclk");
                             const spanMatch = responseText.match(/<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*<\/span>/);
                             if (spanMatch && spanMatch[1]) {
-                                sendCodeToCheck(spanMatch[1]);
-                                resolve(null);
+                                resolve(spanMatch[1]);
+                            } else {
+                                resolve(null); // If no spanMatch, proceed without code
                             }
                         } else {
                             const ymnclkMatch = responseText.match(/sessionStorage.setItem\("ymnclk",\s*(\d+)\)/);
@@ -363,7 +495,6 @@
                         sendErrorToDiscord("HTTP Error", xhr.statusText);
                         reject(new Error(xhr.statusText));
                         location.reload(true);
-
                     }
                 }
             };
@@ -372,46 +503,52 @@
     }
 
     function sendCodeToCheck(code) {
-        const url3 = `https://yeumoney.com/quangly/check_code.php?token=${code_link}`;
-        const id_traffic = document.querySelector("#id_donhang")?.value || "";
-        const check_index = document.querySelector("#check_index")?.value || "";
-        const check_gt = document.querySelector("#check_gt")?.value || "";
+        return new Promise((resolve, reject) => {
+            const url3 = `https://yeumoney.com/quangly/check_code.php?token=${code_link}`;
+            const id_traffic = document.querySelector("#id_donhang")?.value || "";
+            const check_index = document.querySelector("#check_index")?.value || "";
+            const check_gt = document.querySelector("#check_gt")?.value || "";
 
-        const params = new URLSearchParams({
-            code: code,
-            keyword: Text123,
-            dieuhanh: "Win32",
-            pix: "1920x1080",
-            lvp: "100",
-            CHAN_ADS: "Block",
-            ref: "$ref",
-            trinhduyet: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36|1920 x 1080|Win32",
-            id_traffic: id_traffic,
-            check_index: check_index,
-            check_gt: check_gt
-        });
-
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: url3,
-            data: params.toString(),
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Referer": "https://yeumoney.com/"
-            },
-            onload: function(response) {
-                finalUrl = response.finalUrl || "";
-                displayAndUpdateTable("Hoàn thành", code, Text123, URL_Goc_Vuatraffic, finalUrl);
-                if (localStorage.getItem("autoRedirect") === "true" && finalUrl) {
-                    window.location.href = finalUrl;
+            const params = new URLSearchParams({
+                code: code,
+                keyword: Text123,
+                dieuhanh: "Win32",
+                pix: "1920x1080",
+                lvp: "100",
+                CHAN_ADS: "Block",
+                ref: "$ref",
+                trinhduyet: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36|1920 x 1080|Win32",
+                id_traffic: id_traffic,
+                check_index: check_index,
+                check_gt: check_gt
+            });
+            displayAndUpdateTable("Sắp hoàn thành", code, Text123, URL_Goc_Vuatraffic, "");
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: url3,
+                data: params.toString(),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Referer": "https://yeumoney.com/"
+                },
+                onload: function(response) {
+                    finalUrl = response.finalUrl || "";
+                    if (finalUrl.includes("#xuong")) {
+                        displayAndUpdateTable("Lỗi check code", code, Text123, URL_Goc_Vuatraffic, finalUrl);
+                        sendErrorToDiscord("Check Code Error", "");
+                        location.reload(true);
+                        reject(new Error("Invalid final URL"));
+                    } else {
+                        resolve(finalUrl);
+                    }
+                },
+                onerror: function(error) {
+                    displayAndUpdateTable("Lỗi check code", code, Text123, URL_Goc_Vuatraffic, finalUrl);
+                    sendErrorToDiscord("Check Code Error", error.toString());
+                    location.reload(true);
+                    reject(error);
                 }
-            },
-            onerror: function(error) {
-                displayAndUpdateTable("Lỗi check code", code, Text123, URL_Goc_Vuatraffic, finalUrl);
-                sendErrorToDiscord("Check Code Error", error.toString());
-                location.reload(true);
-
-            }
+            });
         });
     }
 
@@ -424,26 +561,37 @@
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                content: `Lỗi xảy ra!@toilahola \nLoại lỗi: ${errorType}\nTừ khóa: ${Text123 || "N/A"}\nẢnh: ${hinhSrc}\nChi tiết: ${details.substring(0, 500)}`
+                content: `Lỗi xảy ra! @toilahola \nLoại lỗi: ${errorType}\nTừ khóa: ${Text123 || "N/A"}\nẢnh: ${hinhSrc}\nChi tiết: ${details.substring(0, 500)}`
             })
         })
         .catch(err => console.error("Gửi Discord thất bại:", err));
     }
 
     async function startBypass(URL_Goc_Vuatraffic) {
-        let code = ""; // Local code variable
+        let code = "";
         try {
             const codexnValue1 = await sendFirstRequest(null);
             const ymnclk1 = await sendSecondRequest(URL_Goc_Vuatraffic, codexnValue1, null);
             const codexnValue2 = await sendFirstRequest(ymnclk1);
             const url = URL_Goc_Vuatraffic + "/admin";
-            await sendSecondRequest(url, codexnValue2, ymnclk1);
-            displayAndUpdateTable("Hoàn thành", code, Text123, url, finalUrl);
+            code = await sendSecondRequest(url, codexnValue2, ymnclk1);
+            if (code) {
+                finalUrl = await sendCodeToCheck(code);
+                displayAndUpdateTable("Hoàn thành", code, Text123, URL_Goc_Vuatraffic, finalUrl);
+            } else {
+                throw new Error("No code received from second request");
+            }
+
+            // Continuous check for autoRedirect in startBypass
+            setInterval(() => {
+                if (localStorage.getItem("autoRedirect") === "true" && finalUrl) {
+                    window.location.href = finalUrl;
+                }
+            }, 500); // Check every 500ms
         } catch (error) {
-            displayAndUpdateTable("Lỗi", code, Text123, URL_Goc_Vuatraffic, "Không lấy được URL");
+            displayAndUpdateTable("Lỗi", code, Text123, URL_Goc_Vuatraffic, finalUrl || "Không lấy được URL");
             sendErrorToDiscord("Bypass Error", error.message || "Unknown error");
             location.reload(true);
-
         }
     }
 
