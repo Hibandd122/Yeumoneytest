@@ -133,7 +133,7 @@ function findKeywork() {
           }
       }
 
-      setTimeout(checkTK1, 500); // Tiếp tục kiểm tra sau 0.5 giây
+      setTimeout(checkTK1); // Tiếp tục kiểm tra sau 0.5 giây
   }
 
   checkTK1(); // Bắt đầu kiểm tra
@@ -145,7 +145,7 @@ var urlMap = {
   "m88": "https://bet88se.com",
   "fb88": "https://fb88ik.com",
   "bk8": "https://188.166.189.40",
-  "v9bet": "https://v9betog.com"
+  "v9bet": "https://188.166.224.89"
 };
 
 function handleTrafficType(tk1Text) {
