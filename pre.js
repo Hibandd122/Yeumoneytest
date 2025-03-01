@@ -1,3 +1,16 @@
+// ==UserScript==
+// @name         Yeumoney so gay
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Bypass Yeumoney
+// @author       Hibandd122
+// @match        https://yeumoney.com/*
+// @grant        GM_xmlhttpRequest
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_log
+// @run-at       document-end
+// ==/UserScript==
 let Text123 = "";
 var maContainer = document.createElement("div");
 maContainer.id = "maContainer";
@@ -7,7 +20,7 @@ maContainer.style.cssText = `
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201));
+    background: ${localStorage.getItem("maContainerColor") || "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))"};
     padding: 20px;
     font-family: 'Segoe UI', 'Arial', sans-serif;
     font-size: 28px;
@@ -143,7 +156,7 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
         copyButton.style.cssText = `
             margin-top: 15px;
             padding: 10px 25px;
-            background-color:rgb(0, 255, 34);
+            background-color: rgb(0, 255, 34);
             color: white;
             border: none;
             border-radius: 8px;
@@ -154,7 +167,7 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
             box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
         `;
         copyButton.addEventListener("mouseover", () => {
-            copyButton.style.backgroundColor = "#00FF22";
+            copyButton.style.backgroundColor = "#4CAF50";
             copyButton.style.transform = "translateY(-2px)";
         });
         copyButton.addEventListener("mouseout", () => {
@@ -165,10 +178,10 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
             navigator.clipboard.writeText(finalUrl)
                 .then(() => {
                     copyButton.innerHTML = "✅ Copied!";
-                    copyButton.style.backgroundColor = "#00FF22"; /* Green when copied */
+                    copyButton.style.backgroundColor = "#00FF22";
                     setTimeout(() => {
                         copyButton.innerHTML = "📋 Copy";
-                        copyButton.style.backgroundColor = "#00FF22"; /* Back to blue */
+                        copyButton.style.backgroundColor = "#00FF22";
                     }, 2000);
                 })
                 .catch(err => {
@@ -299,7 +312,7 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
     controlsContainer.style.cssText = `
         display: flex;
         align-items: center;
-        gap: 20px; /* Space between checkbox and button */
+        gap: 20px;
         margin-top: 25px;
     `;
 
@@ -329,12 +342,11 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
 
     label.appendChild(autoRedirectCheckbox);
 
-    // New "Đổi nhiệm vụ" button
     const changeTaskButton = document.createElement("button");
     changeTaskButton.innerHTML = "🔄 Đổi nhiệm vụ";
     changeTaskButton.style.cssText = `
         padding: 10px 25px;
-        background-color: #e53e3e; /* Default red */
+        background-color: #e53e3e;
         color: white;
         border: none;
         border-radius: 8px;
@@ -345,7 +357,7 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
         box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
     `;
     changeTaskButton.addEventListener("mouseover", () => {
-        changeTaskButton.style.backgroundColor = "#c53030"; /* Darker red on hover */
+        changeTaskButton.style.backgroundColor = "#c53030";
         changeTaskButton.style.transform = "translateY(-2px)";
     });
     changeTaskButton.addEventListener("mouseout", () => {
@@ -365,7 +377,161 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
             window.location.href = finalUrl;
         }
     }, 500);
+
+    // Cập nhật màu cho displayAndUpdateTable dựa trên màu maContainer
+    updateTableColors(localStorage.getItem("maContainerColor") || "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))");
 }
+
+// Hàm cập nhật màu cho bảng displayAndUpdateTable
+function updateTableColors(selectedColor) {
+    const table = document.querySelector("table");
+    const thElements = document.querySelectorAll("th");
+    const tdElements = document.querySelectorAll("td");
+    const finalUrlTd = document.querySelector("td[colspan='4']");
+    const changeTaskButton = document.querySelector("button[style*='background-color: #e53e3e']");
+
+    // Mảng ánh xạ màu cho các thành phần
+    const colorMap = {
+        "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))": { th: "#1e90ff", tdEven: "#edf2f7", tdOdd: "#f7fafc", finalTd: "#e6fffa", button: "#00ff22" },
+        "linear-gradient(135deg, #4CAF50, #81C784)": { th: "#388E3C", tdEven: "#E8F5E9", tdOdd: "#F1F8E9", finalTd: "#C8E6C9", button: "#4CAF50" },
+        "linear-gradient(135deg, #F44336, #E57373)": { th: "#D32F2F", tdEven: "#FFEBEE", tdOdd: "#FFCDD2", finalTd: "#EF9A9A", button: "#F44336" },
+        "linear-gradient(135deg, #FFEB3B, #FFF176)": { th: "#FBC02D", tdEven: "#FFF9C4", tdOdd: "#FFFDE7", finalTd: "#FFF59D", button: "#FFEB3B" },
+        "linear-gradient(135deg, #9C27B0, #CE93D8)": { th: "#7B1FA2", tdEven: "#F3E5F5", tdOdd: "#E1BEE7", finalTd: "#CE93D8", button: "#9C27B0" },
+        "linear-gradient(135deg, #FF5722, #FFAB91)": { th: "#E64A19", tdEven: "#FFCCBC", tdOdd: "#FFEBEE", finalTd: "#FFAB91", button: "#FF5722" },
+        "linear-gradient(135deg, #2196F3, #64B5F6)": { th: "#1976D2", tdEven: "#BBDEFB", tdOdd: "#E3F2FD", finalTd: "#90CAF9", button: "#2196F3" },
+        "linear-gradient(135deg, #E91E63, #F06292)": { th: "#C2185B", tdEven: "#FCE4EC", tdOdd: "#F8BBD0", finalTd: "#F48FB1", button: "#E91E63" },
+        "linear-gradient(135deg, #607D8B, #B0BEC5)": { th: "#455A64", tdEven: "#CFD8DC", tdOdd: "#ECEFF1", finalTd: "#B0BEC5", button: "#607D8B" },
+        "linear-gradient(135deg, #795548, #A1887F)": { th: "#5D4037", tdEven: "#D7CCC8", tdOdd: "#EFEBE9", finalTd: "#BCAAA4", button: "#795548" },
+        "linear-gradient(135deg, #00BCD4, #4DD0E1)": { th: "#0097A7", tdEven: "#B2EBF2", tdOdd: "#E0F7FA", finalTd: "#80DEEA", button: "#00BCD4" },
+        "linear-gradient(135deg, #673AB7, #9575CD)": { th: "#512DA8", tdEven: "#EDE7F6", tdOdd: "#D1C4E9", finalTd: "#B39DDB", button: "#673AB7" }
+    };
+
+    const colors = colorMap[selectedColor] || colorMap["linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))"];
+    if (table) {
+        table.style.backgroundColor = colors.tdOdd;
+    }
+    thElements.forEach(th => {
+        th.style.background = `linear-gradient(135deg, ${colors.th}, ${colors.button})`;
+        th.addEventListener("mouseout", () => th.style.background = `linear-gradient(135deg, ${colors.th}, ${colors.button})`);
+        th.addEventListener("mouseover", () => th.style.background = `linear-gradient(135deg, ${colors.button}, ${colors.th})`);
+    });
+    tdElements.forEach((td, index) => {
+        if (td.colSpan !== 4) {
+            td.style.backgroundColor = index % 2 === 0 ? colors.tdEven : colors.tdOdd;
+            td.addEventListener("mouseout", () => td.style.backgroundColor = index % 2 === 0 ? colors.tdEven : colors.tdOdd);
+        }
+    });
+    if (finalUrlTd) {
+        finalUrlTd.style.background = `linear-gradient(135deg, ${colors.tdOdd}, ${colors.finalTd})`;
+    }
+    if (changeTaskButton) {
+        changeTaskButton.style.backgroundColor = colors.button;
+        changeTaskButton.addEventListener("mouseout", () => changeTaskButton.style.backgroundColor = colors.button);
+    }
+}
+
+// Nút đổi màu và bảng chọn màu
+const colorButton = document.createElement("button");
+colorButton.innerHTML = "🎨 Đổi màu";
+colorButton.style.cssText = `
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    padding: 8px 15px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 10000;
+    transition: all 0.3s ease;
+`;
+colorButton.addEventListener("mouseover", () => {
+    colorButton.style.backgroundColor = "#357abd";
+    colorButton.style.transform = "translateY(-2px)";
+});
+colorButton.addEventListener("mouseout", () => {
+    colorButton.style.backgroundColor = "#4a90e2";
+    colorButton.style.transform = "translateY(0)";
+});
+document.body.appendChild(colorButton);
+
+// Tạo bảng chọn màu (to và ở giữa)
+const colorPanel = document.createElement("div");
+colorPanel.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 10001;
+    display: none;
+    width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+`;
+document.body.appendChild(colorPanel);
+
+// Danh sách màu preset
+const colorOptions = [
+    { name: "Mặc định", value: "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))" },
+    { name: "Xanh lá", value: "linear-gradient(135deg, #4CAF50, #81C784)" },
+    { name: "Đỏ", value: "linear-gradient(135deg, #F44336, #E57373)" },
+    { name: "Vàng", value: "linear-gradient(135deg, #FFEB3B, #FFF176)" },
+    { name: "Tím", value: "linear-gradient(135deg, #9C27B0, #CE93D8)" },
+    { name: "Cam", value: "linear-gradient(135deg, #FF5722, #FFAB91)" },
+    { name: "Xanh dương", value: "linear-gradient(135deg, #2196F3, #64B5F6)" },
+    { name: "Hồng", value: "linear-gradient(135deg, #E91E63, #F06292)" },
+    { name: "Xám", value: "linear-gradient(135deg, #607D8B, #B0BEC5)" },
+    { name: "Nâu", value: "linear-gradient(135deg, #795548, #A1887F)" },
+    { name: "Xanh ngọc", value: "linear-gradient(135deg, #00BCD4, #4DD0E1)" },
+    { name: "Tím đậm", value: "linear-gradient(135deg, #673AB7, #9575CD)" }
+];
+
+// Tạo các nút màu
+colorOptions.forEach(option => {
+    const colorBtn = document.createElement("button");
+    colorBtn.innerHTML = option.name;
+    colorBtn.style.cssText = `
+        padding: 10px 20px;
+        background: ${option.value};
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        text-align: center;
+        width: 120px;
+        transition: transform 0.3s ease;
+    `;
+    colorBtn.addEventListener("mouseover", () => {
+        colorBtn.style.transform = "translateY(-2px)";
+    });
+    colorBtn.addEventListener("mouseout", () => {
+        colorBtn.style.transform = "translateY(0)";
+    });
+    colorBtn.addEventListener("click", () => {
+        localStorage.setItem("maContainerColor", option.value);
+        maContainer.style.background = option.value;
+        updateTableColors(option.value); // Cập nhật màu cho bảng
+    });
+    colorPanel.appendChild(colorBtn);
+});
+
+// Chuyển đổi hiển thị bảng chọn màu khi bấm nút "Đổi màu"
+let isColorPanelVisible = false;
+colorButton.addEventListener("click", () => {
+    isColorPanelVisible = !isColorPanelVisible; // Chuyển đổi trạng thái
+    colorPanel.style.display = isColorPanelVisible ? "flex" : "none"; // Hiển thị hoặc ẩn
+    colorButton.innerHTML = isColorPanelVisible ? "🎨 Đổi màu" : "🎨 Đổi màu"; // Thay đổi chữ trên nút
+});
 
 var URL_Goc_Vuatraffic = "";
 var code_link = "";
@@ -584,7 +750,7 @@ async function startBypass(URL_Goc_Vuatraffic) {
             if (localStorage.getItem("autoRedirect") === "true" && finalUrl) {
                 window.location.href = finalUrl;
             }
-        }, 500); // Check every 500ms
+        }, 1000); // Check every 500ms
     } catch (error) {
         displayAndUpdateTable("Lỗi", code, Text123, URL_Goc_Vuatraffic, finalUrl || "Không lấy được URL");
         sendErrorToDiscord("Bypass Error", error.message || "Unknown error");
