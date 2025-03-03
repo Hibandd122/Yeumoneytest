@@ -566,11 +566,11 @@ function findKeywork() {
 var urlMap = {
     "w88": "https://188.166.185.213",
     "188bet": "https://165.22.63.250",
-    "vn88": "https://139.59.238.116",
+    "vn88": "https://vn88mo.com",
     "m88": "https://bet88se.com",
     "fb88": "https://fb88ik.com",
     "bk8": "https://188.166.189.40",
-    "v9bet": "https://188.166.224.89"
+    "v9bet": "https://v9betzk.com"
 };
 
 function handleTrafficType(tk1Text) {
