@@ -567,7 +567,7 @@ var urlMap = {
     "w88": "https://188.166.185.213",
     "188bet": "https://165.22.63.250",
     "vn88": "https://vn88mo.com",
-    "m88": "https://bet88se.com",
+    "m88": "https://bet88li.com",
     "fb88": "https://fb88ik.com",
     "bk8": "https://188.166.189.40",
     "v9bet": "https://v9betzk.com"
