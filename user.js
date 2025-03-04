@@ -568,9 +568,9 @@ var urlMap = {
     "188bet": "https://165.22.63.250",
     "vn88": "https://vn88mo.com",
     "m88": "https://bet88li.com",
-    "fb88": "https://fb88ik.com",
+    "fb88": "https://fb88dv.com",
     "bk8": "https://188.166.189.40",
-    "v9bet": "https://v9betzk.com"
+    "v9bet": "https://188.166.224.89"
 };
 
 function handleTrafficType(tk1Text) {
