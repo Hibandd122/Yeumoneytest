@@ -11,6 +11,7 @@
 // @grant        GM_log
 // @run-at       document-end
 // ==/UserScript==
+
 let Text123 = "";
 var maContainer = document.createElement("div");
 maContainer.id = "maContainer";
@@ -20,7 +21,7 @@ maContainer.style.cssText = `
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: ${localStorage.getItem("maContainerColor") || "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))"};
+    background: ${GM_getValue("maContainerColor", "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))")};
     padding: 20px;
     font-family: 'Segoe UI', 'Arial', sans-serif;
     font-size: 28px;
@@ -324,20 +325,21 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
     `;
     label.innerHTML = "🔄 Tự động chuyển hướng: ";
 
-    if (localStorage.getItem("autoRedirect") === null) {
-        localStorage.setItem("autoRedirect", "true");
+    // Set default value for autoRedirect if not already set
+    if (GM_getValue("autoRedirect") === undefined) {
+        GM_setValue("autoRedirect", true);
     }
 
     const autoRedirectCheckbox = document.createElement("input");
     autoRedirectCheckbox.type = "checkbox";
-    autoRedirectCheckbox.checked = localStorage.getItem("autoRedirect") === "true";
+    autoRedirectCheckbox.checked = GM_getValue("autoRedirect", true);
     autoRedirectCheckbox.style.cssText = `
         margin-left: 10px;
         transform: scale(1.5);
         cursor: pointer;
     `;
     autoRedirectCheckbox.addEventListener("change", () => {
-        localStorage.setItem("autoRedirect", autoRedirectCheckbox.checked);
+        GM_setValue("autoRedirect", autoRedirectCheckbox.checked);
     });
 
     label.appendChild(autoRedirectCheckbox);
@@ -373,13 +375,13 @@ function displayAndUpdateTable(status, code, keyword, URL_Goc_Vuatraffic, finalU
     maContainer.appendChild(controlsContainer);
 
     setInterval(() => {
-        if (localStorage.getItem("autoRedirect") === "true" && finalUrl && status === "Hoàn thành") {
+        if (GM_getValue("autoRedirect", true) && finalUrl && status === "Hoàn thành") {
             window.location.href = finalUrl;
         }
     }, 500);
 
     // Cập nhật màu cho displayAndUpdateTable dựa trên màu maContainer
-    updateTableColors(localStorage.getItem("maContainerColor") || "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))");
+    updateTableColors(GM_getValue("maContainerColor", "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))"));
 }
 
 // Hàm cập nhật màu cho bảng displayAndUpdateTable
@@ -518,7 +520,7 @@ colorOptions.forEach(option => {
         colorBtn.style.transform = "translateY(0)";
     });
     colorBtn.addEventListener("click", () => {
-        localStorage.setItem("maContainerColor", option.value);
+        GM_setValue("maContainerColor", option.value);
         maContainer.style.background = option.value;
         updateTableColors(option.value); // Cập nhật màu cho bảng
     });
@@ -747,7 +749,7 @@ async function startBypass(URL_Goc_Vuatraffic) {
 
         // Continuous check for autoRedirect in startBypass
         setInterval(() => {
-            if (localStorage.getItem("autoRedirect") === "true" && finalUrl) {
+            if (GM_getValue("autoRedirect", true) && finalUrl) {
                 window.location.href = finalUrl;
             }
         }, 1000); // Check every 500ms
@@ -759,4 +761,3 @@ async function startBypass(URL_Goc_Vuatraffic) {
 }
 
 findKeywork();
-
