@@ -2,7 +2,15 @@
     'use strict';
 
     const DEFAULT_COLOR = "linear-gradient(135deg, rgb(31, 176, 196), rgb(20, 164, 201))";
-    let URL_MAP = null; // Will be set after fetching or retrieving from localStorage
+    const URL_MAP = Object.freeze({
+        w88: "https://188.166.185.213",
+        '188bet': "https://165.22.63.250",
+        vn88: "https://vn88ne.com/",
+        m88: "https://bet88so.com",
+        fb88: "https://fb88nk.com/",
+        bk8: "https://bk8ze.com",
+        v9bet: "https://v9betsk.com/"
+    });
 
     let keyword = "";
     let trafficUrl = "";
@@ -38,9 +46,6 @@
             if ((key === "autoRedirect" || key === "containerVisible") && typeof parsed !== "boolean") {
                 return defaultValue;
             }
-            if (key === "urlMap" && typeof parsed !== "object") {
-                return defaultValue;
-            }
             return parsed;
         } catch (e) {
             return defaultValue;
@@ -56,30 +61,6 @@
             }
         } catch (e) {
             console.log(`Failed to save ${key}`);
-        }
-    };
-
-    // Fetch URL_MAP from map.txt or retrieve from localStorage
-    const fetchUrlMap = async () => {
-        // Check if URL_MAP is cached in localStorage
-        const cachedMap = getStoredValue("urlMap", null);
-        if (cachedMap) {
-            return Object.freeze(cachedMap);
-        }
-
-        try {
-            const response = await fetch(`https://raw.githubusercontent.com/Hibandd122/Yeumoneytest/main/map.txt?v=${Date.now()}`);
-            if (!response.ok) throw new Error(`Failed to fetch map.txt: ${response.status}`);
-            const text = await response.text();
-            // Evaluate the text as a JavaScript object (assuming it's safe and in the correct format)
-            const mapObj = eval(`(${text})`); // Use eval cautiously; ensure the source is trusted
-            setStoredValue("urlMap", mapObj); // Cache the map in localStorage
-            return Object.freeze(mapObj);
-        } catch (err) {
-            console.error("Error fetching map.txt:", err);
-            createTable("Lỗi", "", "", "", "Không thể tải danh sách URL");
-            setTimeout(() => location.reload(true), 1000);
-            throw err;
         }
     };
 
@@ -426,24 +407,18 @@
         return;
     }
 
-    const findKeyword = async () => {
-        createTable("Đang tải danh sách URL");
-        try {
-            URL_MAP = await fetchUrlMap(); // Fetch or retrieve URL_MAP
-            createTable("Đang tìm nhiệm vụ");
-            const check = () => {
-                const tk1 = document.getElementById("TK1")?.textContent.trim();
-                if (tk1) {
-                    keyword = tk1;
-                    handleTrafficType(tk1.toLowerCase());
-                } else {
-                    setTimeout(check, 100);
-                }
-            };
-            check();
-        } catch (err) {
-            // Error handling already done in fetchUrlMap
-        }
+    const findKeyword = () => {
+        createTable("Đang tìm nhiệm vụ");
+        const check = () => {
+            const tk1 = document.getElementById("TK1")?.textContent.trim();
+            if (tk1) {
+                keyword = tk1;
+                handleTrafficType(tk1.toLowerCase());
+            } else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
     };
 
     const handleTrafficType = type => {
