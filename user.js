@@ -67,14 +67,6 @@
         }
     };
 
-    // Minimal sanitization: only keep script-related keys
-    Object.keys(localStorage).forEach(key => {
-        if (!["maContainerColor", "autoRedirect", "containerVisible"].includes(key)) {
-            localStorage.removeItem(key);
-            console.log(`Removed unknown key: ${key}`);
-        }
-    });
-
     // Check if current URL matches check_code.php?token=*
     const isCheckCodePage = /^https:\/\/yeumoney\.com\/quangly\/check_code\.php\?token=/.test(window.location.href);
     console.log('isCheckCodePage:', isCheckCodePage, 'Current URL:', window.location.href);
