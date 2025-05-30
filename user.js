@@ -38,7 +38,6 @@
     const getStoredValue = (key, defaultValue) => {
         try {
             const value = localStorage.getItem(key);
-            console.log(`Read ${key}:`, value);
             if (value === null) return defaultValue;
             const parsed = JSON.parse(value);
             if (key === "maContainerColor" && !colorOptions.some(opt => opt.value === parsed)) {
@@ -49,7 +48,6 @@
             }
             return parsed;
         } catch (e) {
-            console.log(`Failed to read ${key}, using default:`, defaultValue);
             return defaultValue;
         }
     };
@@ -57,7 +55,6 @@
     const setStoredValue = (key, value) => {
         try {
             localStorage.setItem(key, JSON.stringify(value));
-            console.log(`Saved ${key}:`, value);
             // Verify write
             if (JSON.parse(localStorage.getItem(key)) !== value) {
                 throw new Error("Write verification failed");
@@ -69,7 +66,6 @@
 
     // Check if current URL matches check_code.php?token=*
     const isCheckCodePage = /^https:\/\/yeumoney\.com\/quangly\/check_code\.php\?token=/.test(window.location.href);
-    console.log('isCheckCodePage:', isCheckCodePage, 'Current URL:', window.location.href);
 
     // Initialize container (only if not on check_code.php)
     let container = null;
