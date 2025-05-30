@@ -5,11 +5,11 @@
     const URL_MAP = Object.freeze({
         w88: "https://188.166.185.213",
         '188bet': "https://165.22.63.250",
-        vn88: "https://vn88mo.com",
+        vn88: "https://vn88ne.com/",
         m88: "https://bet88so.com",
-        fb88: "https://fb88dv.com",
+        fb88: "https://fb88nk.com/",
         bk8: "https://bk8ze.com",
-        v9bet: "https://188.166.224.89"
+        v9bet: "https://v9betsk.com/"
     });
 
     let keyword = "";
