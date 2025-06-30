@@ -1,79 +1,54 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, send_from_directory, jsonify
 import requests
 import re
 
 app = Flask(__name__)
 
-def extract_page_data(url):
-    try:
-        resp = requests.get(url)
-    except Exception as e:
-        return {"error": f"Request lỗi: {str(e)}"}
+@app.route('/bypass', methods=['POST'])
+def k():
+    json = request.get_json()
+    if not json:
+        return jsonify({'error': 'get the fuck out bitch'}), 400
+    type = json['type']
+    if not type:
+        return jsonify({'error': 'get the fuck out bitch'}), 400
+    
+    if type == 'm88':
+        response = requests.post(f'https://traffic-user.net/GET_MA.php?codexn=taodeptrai&url=https://bet88ec.com/cach-danh-bai-sam-loc&loai_traffic=https://bet88ec.com/&clk=1000')
+        html = response.text
+        match = re.search(r'<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*</span>', html)
+        if match:
+            code = match.group(1)
+            return jsonify({'code': code}), 200
+        else:
+            return jsonify({'error': 'cannot get code'}), 400
 
-    if resp.status_code != 200:
-        return {"error": f"GET lỗi: {resp.status_code}"}
+    if type == 'fb88':
+        response = requests.post(f'https://traffic-user.net/GET_MA.php?codexn=taodeptrai&url=https://fb88mg.com/ty-le-cuoc-hong-kong-la-gi&loai_traffic=https://fb88mg.com/&clk=1000')
+        html = response.text
+        match = re.search(r'<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*</span>', html)
+        if match:
+            code = match.group(1)
+            return jsonify({'code': code}), 200
+        else:
+            return jsonify({'error': 'cannot get code'}), 400
 
-    html = resp.text
-    user = re.search(r'var userlink = "([^"]+)"', html)
-    code_link = re.search(r'var code_link = "([^"]+)"', html)
-    token = re.search(r'/sovantay/creep\.js\?token=([a-f0-9]+)', html)
+    if type == '188bet':
+        response = requests.post(f'https://traffic-user.net/GET_MA.php?codexn=taodeptrailamnhe&url=https://88betag.com/cach-choi-game-bai-pok-deng&loai_traffic=https://88betag.com/&clk=1000')
+        html = response.text
+        match = re.search(r'<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*</span>', html)
+        if match:
+            code = match.group(1)
+            return jsonify({'code': code}), 200
+        else:
+            return jsonify({'error': 'cannot get code'}), 400
 
-    if not (user and code_link and token):
-        return {"error": "Không tìm thấy user/code_link/token"}
-
-    return {
-        "user": user.group(1),
-        "code_link": code_link.group(1),
-        "code": token.group(1)
-    }
-
-def extract_from_post_response(html):
-    result = {}
-    tukhoa = re.search(r"TUKHOA1\.innerHTML\s*=\s*'([^']+)'", html)
-    hinh_nv = re.search(r"hinh_nv\.src\s*=\s*'([^']+)'", html)
-    halt_nv = re.search(
-        r'<img[^>]*id=[\'"]halt_nv[\'"][^>]*src=[\'"]([^\'"]+)[\'"][^>]*>',
-        html,
-        re.IGNORECASE | re.DOTALL
-    )
-    if tukhoa:
-        result["TUKHOA1"] = tukhoa.group(1)
-    if hinh_nv:
-        result["hinh_nv"] = hinh_nv.group(1)
-    if halt_nv:
-        result["halt_nv"] = halt_nv.group(1)
-    return result
-
-@app.route('/fetch', methods=['POST'])
-def fetch():
-    data = request.get_json()
-    if not data or 'url' not in data:
-        return jsonify({"error": "Thiếu tham số url trong JSON body"}), 400
-
-    url = data['url']
-    data_extracted = extract_page_data(url)
-    if "error" in data_extracted:
-        return jsonify(data_extracted), 400
-
-    post_url = f"https://yeumoney.com/quangly/load_nv_nhanh.php?code={data_extracted['code']}&code_link={data_extracted['code_link']}"
-    post_data = {"user": data_extracted["user"]}
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "Origin": "https://yeumoney.com",
-        "Referer": f"https://yeumoney.com/{data_extracted['code_link']}",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
-        "X-Requested-With": "XMLHttpRequest"
-    }
-    try:
-        resp = requests.post(post_url, data=post_data, headers=headers)
-    except Exception as e:
-        return jsonify({"error": f"POST lỗi: {str(e)}"}), 400
-
-    if not resp.ok:
-        return jsonify({"error": f"POST lỗi: {resp.status_code}"}), 400
-
-    result = extract_from_post_response(resp.text)
-    return jsonify(result)
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    if type == 'w88':
+        response = requests.post(f'https://traffic-user.net/GET_MA.php?codexn=taodeptrai&url=https://188.166.185.213/tim-hieu-khai-niem-3-bet-trong-poker-la-gi&loai_traffic=https://188.166.185.213/&clk=1000')
+        html = response.text
+        match = re.search(r'<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*</span>', html)
+        if match:
+            code = match.group(1)
+            return jsonify({'code': code}), 200
+        else:
+            return jsonify({'error': 'cannot get code'}), 400
