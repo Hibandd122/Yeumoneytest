@@ -1,11 +1,9 @@
 from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
-import requests
-import re
-import time
+import requests, re, time
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  # 🔥 Bật CORS cho tất cả route
 
 URLS = {
     "vn88": "https://vn88no.com",
@@ -17,134 +15,140 @@ URLS = {
     "w88": "https://188.166.185.213"
 }
 
-HTML_TEMPLATE = '''
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Bypass Code Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #3b82f6;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            animation: spin 1s linear infinite;
-            margin: auto;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+HTML = '''
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Bypass</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+.hidden { display: none; }
+.spinner {
+  border: 4px solid rgba(255,255,255,0.1);
+  border-left-color: #c084fc;
+  border-radius: 50%;
+  width: 28px; height: 28px;
+  animation: spin 1s linear infinite; margin: auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl">
-        <h1 class="text-2xl font-bold text-center mb-6 text-blue-700">Chọn loại để lấy mã</h1>
+<body class="bg-black min-h-screen flex items-center justify-center p-4">
+<div class="bg-zinc-900 text-white p-6 rounded-lg shadow-xl w-full max-w-xl">
+  <h1 class="text-2xl font-bold text-center text-purple-400 mb-4">🚀 Bypass Code Generator</h1>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-            {% for type in types %}
-                <button onclick="getCode('{{ type }}')"
-                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
-                    {{ type | upper }}
-                </button>
-            {% endfor %}
-        </div>
+  <div class="flex justify-center mb-6">
+    <button onclick="toggle()" id="modeBtn"
+      class="transition px-4 py-2 rounded font-semibold text-white bg-sky-600 hover:bg-sky-700">
+      Mặc định (Xanh)
+    </button>
+  </div>
 
-        <div id="countdown" class="text-center text-yellow-600 text-lg font-semibold mb-2 hidden"></div>
-        <div id="spinner" class="spinner hidden"></div>
-        <div id="result" class="text-center text-lg font-semibold mt-4"></div>
-    </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+    {% for name, url in urls.items() %}
+    <button onclick="run('{{name}}','{{url}}')"
+      class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-3 rounded transition">
+      {{ name.upper() }}
+    </button>
+    {% endfor %}
+  </div>
 
-    <script>
-        let countdownInterval;
+  <div id="countdown" class="hidden text-yellow-400 text-center text-sm font-semibold mb-2"></div>
+  <div id="spinner" class="spinner hidden mb-2"></div>
+  <div id="result" class="text-center text-lg font-semibold text-white"></div>
+</div>
 
-        function startCountdown(duration = 80) {
-            const countdownEl = document.getElementById('countdown');
-            let timeLeft = duration;
-            countdownEl.classList.remove('hidden');
-            countdownEl.classList.remove('text-green-600');
-            countdownEl.textContent = `⏳ Đợi: ${timeLeft}s`;
+<script>
+let isDirect = false;
+let timer;
 
-            clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => {
-                timeLeft--;
-                countdownEl.textContent = `⏳ Đợi: ${timeLeft}s`;
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownEl.textContent = `✅ Đã hết thời gian đợi`;
-                    countdownEl.classList.add('text-green-600');
-                }
-            }, 1000);
-        }
+function toggle() {
+  isDirect = !isDirect;
+  const btn = document.getElementById("modeBtn");
+  btn.textContent = isDirect ? "Direct (Đỏ)" : "Mặc định (Xanh)";
+  btn.className = isDirect
+    ? "transition px-4 py-2 rounded font-semibold text-white bg-red-600 hover:bg-red-700"
+    : "transition px-4 py-2 rounded font-semibold text-white bg-sky-600 hover:bg-sky-700";
+  document.getElementById("result").textContent = "";
+  document.getElementById("countdown").classList.add("hidden");
+}
 
-        async function getCode(type) {
-            const result = document.getElementById('result');
-            const spinner = document.getElementById('spinner');
+function run(name, url) {
+  const result = document.getElementById("result");
+  const spinner = document.getElementById("spinner");
+  result.innerHTML = '';
+  spinner.classList.remove("hidden");
+  startCountdown(80);
 
-            result.innerHTML = '';
-            spinner.classList.remove('hidden');
-            startCountdown(80);
+  const payload = { type: isDirect ? url : name };
 
-            try {
-                const res = await fetch('/bypass', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({type})
-                });
+  fetch("/bypass", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+  .then((r) => r.json())
+  .then((d) => {
+    if (d.code) {
+      result.innerHTML = `✅ Mã: <span class="text-purple-300">${d.code}</span> <span class="text-sm text-gray-400">(${d.duration}s)</span>`;
+      result.className = "text-center font-semibold text-green-400";
+    } else {
+      result.textContent = `❌ ${d.error}`;
+      result.className = "text-center font-semibold text-red-500";
+    }
+  })
+  .catch((e) => {
+    result.textContent = "❌ Lỗi: " + e;
+    result.className = "text-center font-semibold text-red-500";
+  })
+  .finally(() => spinner.classList.add("hidden"));
+}
 
-                const data = await res.json();
-                if (data.code) {
-                    result.innerHTML = `✅ Mã: <span class="text-blue-700">${data.code}</span>
-                        (⏱ ${data.duration}s)
-                        <button onclick="copyToClipboard('${data.code}')" class="ml-2 text-sm text-green-600 hover:underline">[Sao chép]</button>`;
-                    result.className = 'text-center text-green-600 font-semibold mt-4';
-                } else {
-                    result.textContent = `❌ ${data.error || 'Lỗi không xác định'}`;
-                    result.className = 'text-center text-red-600 font-semibold mt-4';
-                }
-            } catch (err) {
-                result.textContent = `❌ Lỗi fetch: ${err.message}`;
-                result.className = 'text-center text-red-600 font-semibold mt-4';
-            } finally {
-                spinner.classList.add('hidden');
-            }
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text)
-                .then(() => alert("Đã sao chép mã: " + text))
-                .catch(() => alert("Không sao chép được."));
-        }
-    </script>
-</body>
-</html>
+function startCountdown(t) {
+  const el = document.getElementById("countdown");
+  clearInterval(timer);
+  el.classList.remove("hidden");
+  el.classList.remove("text-green-400");
+  timer = setInterval(() => {
+    el.textContent = `⏳ Đợi: ${t}s`;
+    if (t-- <= 0) {
+      clearInterval(timer);
+      el.textContent = "✅ Hết thời gian";
+      el.classList.add("text-green-400");
+    }
+  }, 1000);
+}
+</script>
+</body></html>
 '''
 
 @app.route('/')
 def index():
-    return render_template_string(HTML_TEMPLATE, types=URLS.keys())
+    return render_template_string(HTML, urls=URLS)
 
 @app.route('/bypass', methods=['POST'])
 def bypass():
-    json_data = request.get_json() or {}
-    type = json_data.get('type')
+    data = request.get_json()
+    type_value = data.get('type')
+    if not type_value:
+        return jsonify({'error': 'thiếu type'}), 400
 
-    if type not in URLS:
-        return jsonify({'error': 'Loại không hợp lệ'}), 400
+    is_url = type_value.startswith('http://') or type_value.startswith('https://')
+    keyword = type_value if not is_url else None
+    url = type_value if is_url else URLS.get(type_value)
+    if not is_url and keyword not in URLS:
+        return jsonify({'error': 'Tên miền không hợp lệ'}), 400
+    if is_url and not url:
+        return jsonify({'error': 'URL không hợp lệ'}), 400
 
-    base_url = URLS[type]
-    start = time.time()
+    base_url = "https://traffic-user.net/"
+    endpoint = "GET_MD.php" if is_url else "GET_MA.php"
+    regex = r'id="layma_me_tfudirect"[^>]*>\s*(\d+)' if is_url else r'id="layma_me_vuatraffic"[^>]*>\s*(\d+)'
+    full_url = f"{base_url}{endpoint}?codexn=maygayvai&url={url}/admin&loai_traffic=https://www.google.com/&clk=1000"
+
     try:
-        response = requests.post(
-            f'https://traffic-user.net/GET_MA.php?codexn=maygayvai&url={base_url}/admin&loai_traffic=https://www.google.com/&clk=1000',
-            timeout=15
-        )
+        t = time.time()
+        r = requests.post(full_url, timeout=15)
+        m = re.search(regex, r.text)
+        if m:
+            return jsonify({'code': m.group(1), 'duration': round(time.time()-t, 2)})
+        return jsonify({'error': 'Không tìm thấy mã'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-    html = response.text
-    match = re.search(r'<span id="layma_me_vuatraffic"[^>]*>\s*(\d+)\s*</span>', html)
-    if match:
-        duration = round(time.time() - start, 2)
-        return jsonify({'code': match.group(1), 'duration': duration}), 200
-    return jsonify({'error': 'Không trích xuất được mã'}), 400
