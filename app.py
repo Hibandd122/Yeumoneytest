@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify, render_template_string
+from flask_cors import CORS
 import requests
 import re
 import time
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 URLS = {
     "vn88": "https://vn88no.com",
