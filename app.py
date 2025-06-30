@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template_string
 import requests
 import re
 import time
@@ -93,6 +93,7 @@ HTML_TEMPLATE = '''
                 const data = await res.json();
                 if (data.code) {
                     result.innerHTML = `✅ Mã: <span class="text-blue-700">${data.code}</span>
+                        (⏱ ${data.duration}s)
                         <button onclick="copyToClipboard('${data.code}')" class="ml-2 text-sm text-green-600 hover:underline">[Sao chép]</button>`;
                     result.className = 'text-center text-green-600 font-semibold mt-4';
                 } else {
@@ -126,11 +127,15 @@ def bypass():
     json_data = request.get_json() or {}
     type = json_data.get('type')
 
+    if type not in URLS:
+        return jsonify({'error': 'Loại không hợp lệ'}), 400
+
     base_url = URLS[type]
     start = time.time()
     try:
         response = requests.post(
-            f'https://traffic-user.net/GET_MA.php?codexn=maygayvai&url={base_url}/admin&loai_traffic=https://www.google.com/&clk=1000'
+            f'https://traffic-user.net/GET_MA.php?codexn=maygayvai&url={base_url}/admin&loai_traffic=https://www.google.com/&clk=1000',
+            timeout=15
         )
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -140,4 +145,4 @@ def bypass():
     if match:
         duration = round(time.time() - start, 2)
         return jsonify({'code': match.group(1), 'duration': duration}), 200
-    return jsonify({'error': 'Cannot extract code from response'}), 400
+    return jsonify({'error': 'Không trích xuất được mã'}), 400
