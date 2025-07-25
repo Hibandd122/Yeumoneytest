@@ -12,7 +12,8 @@ URLS = {
     "bk8": "https://bk8xo.com",
     "v9bet": "hhttps://v9betlg.com",
     "188bet": "https://88betag.com",
-    "w88": "https://w88abc.com"
+    "w88": "https://w88abc.com",
+    "fun88": "https://fun88de.com"
 }
 
 HTML = '''
