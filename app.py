@@ -17,44 +17,51 @@ URLS = {
 }
 
 HTML = '''
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Bypass</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-.hidden { display: none; }
-.spinner {
-  border: 4px solid rgba(255,255,255,0.1);
-  border-left-color: #c084fc;
-  border-radius: 50%;
-  width: 28px; height: 28px;
-  animation: spin 1s linear infinite; margin: auto;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Bypass Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #f43f5e;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-black min-h-screen flex items-center justify-center p-4">
-<div class="bg-zinc-900 text-white p-6 rounded-lg shadow-xl w-full max-w-xl">
-  <h1 class="text-2xl font-bold text-center text-purple-400 mb-4">🚀 Bypass Code Generator</h1>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+  <div class="bg-zinc-800 w-full max-w-xl p-6 rounded-xl shadow-xl space-y-6">
+    <h1 class="text-3xl font-bold text-center text-pink-400">🚀 Bypass Code Generator</h1>
 
-  <div class="flex justify-center mb-6">
-    <button onclick="toggle()" id="modeBtn"
-      class="transition px-4 py-2 rounded font-semibold text-white bg-sky-600 hover:bg-sky-700">
-      Mặc định (Xanh)
-    </button>
+    <div class="flex justify-center">
+      <button id="modeBtn" onclick="toggle()"
+        class="px-4 py-2 font-semibold rounded-lg transition text-white bg-red-600 hover:bg-red-700">
+        Màu đỏ (Mặc định)
+      </button>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {% for name, url in urls.items() %}
+      <button onclick="run('{{name}}','{{url}}')"
+        class="bg-pink-600 hover:bg-pink-700 py-2 px-3 rounded font-medium transition">
+        {{ name.upper() }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <div id="countdown" class="text-center text-yellow-300 text-sm font-semibold hidden"></div>
+    <div id="spinner" class="spinner hidden"></div>
+    <div id="result" class="text-center text-lg font-semibold"></div>
   </div>
-
-  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-    {% for name, url in urls.items() %}
-    <button onclick="run('{{name}}','{{url}}')"
-      class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-3 rounded transition">
-      {{ name.upper() }}
-    </button>
-    {% endfor %}
-  </div>
-
-  <div id="countdown" class="hidden text-yellow-400 text-center text-sm font-semibold mb-2"></div>
-  <div id="spinner" class="spinner hidden mb-2"></div>
-  <div id="result" class="text-center text-lg font-semibold text-white"></div>
-</div>
 
 <script>
 let isDirect = false;
@@ -63,10 +70,15 @@ let timer;
 function toggle() {
   isDirect = !isDirect;
   const btn = document.getElementById("modeBtn");
-  btn.textContent = isDirect ? "Direct (Đỏ)" : "Mặc định (Xanh)";
-  btn.className = isDirect
-    ? "transition px-4 py-2 rounded font-semibold text-white bg-red-600 hover:bg-red-700"
-    : "transition px-4 py-2 rounded font-semibold text-white bg-sky-600 hover:bg-sky-700";
+
+  if (isDirect) {
+    btn.textContent = "Màu xanh";
+    btn.className = "px-4 py-2 font-semibold rounded-lg transition text-white bg-sky-600 hover:bg-sky-700";
+  } else {
+    btn.textContent = "Màu đỏ (Mặc định)";
+    btn.className = "px-4 py-2 font-semibold rounded-lg transition text-white bg-red-600 hover:bg-red-700";
+  }
+
   document.getElementById("result").textContent = "";
   document.getElementById("countdown").classList.add("hidden");
 }
@@ -88,7 +100,7 @@ function run(name, url) {
   .then((r) => r.json())
   .then((d) => {
     if (d.code) {
-      result.innerHTML = `✅ Mã: <span class="text-purple-300">${d.code}</span> <span class="text-sm text-gray-400">(${d.duration}s)</span>`;
+      result.innerHTML = `✅ Mã: <span class="text-pink-300">${d.code}</span> <span class="text-sm text-gray-400">(${d.duration}s)</span>`;
       result.className = "text-center font-semibold text-green-400";
     } else {
       result.textContent = `❌ ${d.error}`;
@@ -117,14 +129,14 @@ function startCountdown(t) {
   }, 1000);
 }
 </script>
-</body></html>
+</body>
+</html>
 '''
 
 @app.route('/')
 def index():
     return render_template_string(HTML, urls=URLS)
 
-@app.route('/bypass', methods=['POST'])
 @app.route('/bypass', methods=['POST'])
 def bypass():
     data = request.get_json(force=True)
@@ -146,7 +158,8 @@ def bypass():
         "loai_traffic": base_url
     }
 
-    endpoint = "data_verify.php" if is_url else "big_verify.php"
+    # 🔁 Đã đảo ngược điều kiện ở đây:
+    endpoint = "data_verify.php" if not is_url else "big_verify.php"
     full_url = f"https://data-abc.com/{endpoint}"
 
     try:
