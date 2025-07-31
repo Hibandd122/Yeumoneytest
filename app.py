@@ -49,6 +49,7 @@ HTML = '''
     }
     .btn-hover:hover {
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     .result-glow {
       animation: glowPulse 1.5s infinite alternate;
@@ -64,10 +65,40 @@ HTML = '''
       max-width: 200px;
       margin: 0 auto;
     }
-    .logo-container svg {
+    .logo-container img {
       width: 100%;
       height: auto;
-      fill: currentColor;
+    }
+    .copy-btn {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .result-container:hover .copy-btn {
+      opacity: 1;
+    }
+    .mode-btn-red {
+      background: linear-gradient(90deg, #dc2626, #b91c1c);
+      border: 2px solid #f87171;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .mode-btn-red:hover {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+    .mode-btn-blue {
+      background: linear-gradient(90deg, #2563eb, #1e40af);
+      border: 2px solid #60a5fa;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .mode-btn-blue:hover {
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
     }
   </style>
 </head>
@@ -75,7 +106,7 @@ HTML = '''
   <div class="bg-gray-800/80 backdrop-blur-lg w-full max-w-2xl p-8 rounded-2xl shadow-2xl space-y-8 glow">
     <!-- Logo SVG -->
     <div class="logo-container">
-      <img src="https://yeumoney.com/theme_v2/assets/img/logo.svg" alt="YooMoney Logo" class="w-full h-auto">
+      <img src="https://yeumoney.com/theme_v2/assets/img/logo.svg" alt="YeuMoney Logo" class="w-full h-auto">
     </div>
 
     <h1 class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 animate-pulse">
@@ -84,7 +115,7 @@ HTML = '''
 
     <div class="flex justify-center">
       <button id="modeBtn" onclick="toggle()"
-        class="px-6 py-3 font-semibold rounded-lg btn-hover text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900">
+        class="mode-btn-red btn-hover">
         Màu đỏ (Mặc định)
       </button>
     </div>
@@ -100,7 +131,12 @@ HTML = '''
 
     <div id="countdown" class="text-center text-yellow-300 text-sm font-semibold hidden"></div>
     <div id="spinner" class="spinner hidden"></div>
-    <div id="result" class="text-center text-xl font-bold"></div>
+    <div class="result-container relative flex justify-center items-center">
+      <div id="result" class="text-center text-xl font-bold"></div>
+      <button id="copyBtn" class="copy-btn absolute right-0 px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 btn-hover hidden">
+        Copy
+      </button>
+    </div>
   </div>
 
 <script>
@@ -113,21 +149,24 @@ function toggle() {
 
   if (isDirect) {
     btn.textContent = "Màu xanh";
-    btn.className = "px-6 py-3 font-semibold rounded-lg btn-hover text-white bg-gradient-to-r from-sky-600 to-sky-800 hover:from-sky-700 hover:to-sky-900";
+    btn.className = "mode-btn-blue btn-hover";
   } else {
     btn.textContent = "Màu đỏ (Mặc định)";
-    btn.className = "px-6 py-3 font-semibold rounded-lg btn-hover text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900";
+    btn.className = "mode-btn-red btn-hover";
   }
 
   document.getElementById("result").textContent = "";
   document.getElementById("countdown").classList.add("hidden");
+  document.getElementById("copyBtn").classList.add("hidden");
 }
 
 function run(name, url) {
   const result = document.getElementById("result");
   const spinner = document.getElementById("spinner");
+  const copyBtn = document.getElementById("copyBtn");
   result.innerHTML = '';
   spinner.classList.remove("hidden");
+  copyBtn.classList.add("hidden");
   startCountdown(80);
 
   const payload = { type: isDirect ? url : name };
@@ -142,6 +181,7 @@ function run(name, url) {
     if (d.code) {
       result.innerHTML = `✅ Mã: <span class="text-pink-300">${d.code}</span> <span class="text-sm text-gray-400">(${d.duration}s)</span>`;
       result.className = "text-center font-bold text-green-400 result-glow";
+      copyBtn.classList.remove("hidden");
     } else {
       result.textContent = `❌ ${d.error}`;
       result.className = "text-center font-bold text-red-500";
@@ -168,6 +208,23 @@ function startCountdown(t) {
     }
   }, 1000);
 }
+
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const code = document.querySelector("#result .text-pink-300")?.textContent;
+  if (code) {
+    navigator.clipboard.writeText(code).then(() => {
+      const copyBtn = document.getElementById("copyBtn");
+      copyBtn.textContent = "Đã copy!";
+      copyBtn.className = "copy-btn absolute right-0 px-3 py-1 text-sm font-medium text-white bg-green-800 rounded-lg btn-hover";
+      setTimeout(() => {
+        copyBtn.textContent = "Copy";
+        copyBtn.className = "copy-btn absolute right-0 px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 btn-hover";
+      }, 2000);
+    }).catch((err) => {
+      console.error("Lỗi khi copy: ", err);
+    });
+  }
+});
 </script>
 </body>
 </html>
