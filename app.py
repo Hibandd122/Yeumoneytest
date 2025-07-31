@@ -57,10 +57,27 @@ HTML = '''
       0% { text-shadow: 0 0 5px rgba(34, 197, 94, 0.5); }
       100% { text-shadow: 0 0 15px rgba(34, 197, 94, 0.8); }
     }
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      max-width: 200px;
+      margin: 0 auto;
+    }
+    .logo-container svg {
+      width: 100%;
+      height: auto;
+      fill: currentColor;
+    }
   </style>
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4 font-sans">
   <div class="bg-gray-800/80 backdrop-blur-lg w-full max-w-2xl p-8 rounded-2xl shadow-2xl space-y-8 glow">
+    <!-- Logo SVG -->
+    <div class="logo-container">
+      <img src="https://yeumoney.com/theme_v2/assets/img/logo.svg" alt="YooMoney Logo" class="w-full h-auto">
+    </div>
+
     <h1 class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 animate-pulse">
       🚀 Bypass Code Generator
     </h1>
