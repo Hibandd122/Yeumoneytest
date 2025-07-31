@@ -48,8 +48,16 @@ HTML = '''
       transform: translateY(0);
     }
     .btn-hover:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+    .btn-pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
     }
     .result-glow {
       animation: glowPulse 1.5s infinite alternate;
@@ -64,17 +72,23 @@ HTML = '''
       align-items: center;
       max-width: 200px;
       margin: 0 auto;
+      animation: logoFadeIn 1s ease-out;
     }
     .logo-container img {
       width: 100%;
       height: auto;
     }
+    @keyframes logoFadeIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
     .copy-btn {
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.3s ease, transform 0.3s ease;
     }
     .result-container:hover .copy-btn {
       opacity: 1;
+      transform: scale(1.1);
     }
     .mode-btn-red {
       background: linear-gradient(90deg, #dc2626, #b91c1c);
@@ -84,9 +98,21 @@ HTML = '''
       font-weight: 600;
       color: white;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
     }
-    .mode-btn-red:hover {
-      background: linear-gradient(90deg, #ef4444, #dc2626);
+    .mode-btn-red::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    .mode-btn-red:hover::before {
+      left: 100%;
     }
     .mode-btn-blue {
       background: linear-gradient(90deg, #2563eb, #1e40af);
@@ -96,9 +122,38 @@ HTML = '''
       font-weight: 600;
       color: white;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
     }
-    .mode-btn-blue:hover {
-      background: linear-gradient(90deg, #3b82f6, #2563eb);
+    .mode-btn-blue::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    .mode-btn-blue:hover::before {
+      left: 100%;
+    }
+    .grid-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .grid-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    .grid-btn:hover::before {
+      left: 100%;
     }
   </style>
 </head>
@@ -115,7 +170,7 @@ HTML = '''
 
     <div class="flex justify-center">
       <button id="modeBtn" onclick="toggle()"
-        class="mode-btn-red btn-hover">
+        class="mode-btn-red btn-hover btn-pulse">
         Màu đỏ (Mặc định)
       </button>
     </div>
@@ -123,7 +178,7 @@ HTML = '''
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
       {% for name, url in urls.items() %}
       <button onclick="run('{{name}}','{{url}}')"
-        class="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 py-3 px-4 rounded-lg font-semibold text-white btn-hover shadow-md">
+        class="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 py-3 px-4 rounded-lg font-semibold text-white btn-hover grid-btn shadow-md">
         {{ name.upper() }}
       </button>
       {% endfor %}
@@ -149,10 +204,10 @@ function toggle() {
 
   if (isDirect) {
     btn.textContent = "Màu xanh";
-    btn.className = "mode-btn-blue btn-hover";
+    btn.className = "mode-btn-blue btn-hover btn-pulse";
   } else {
     btn.textContent = "Màu đỏ (Mặc định)";
-    btn.className = "mode-btn-red btn-hover";
+    btn.className = "mode-btn-red btn-hover btn-pulse";
   }
 
   document.getElementById("result").textContent = "";
