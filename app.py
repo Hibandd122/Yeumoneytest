@@ -138,11 +138,13 @@ HTML = '''
     .mode-btn-blue:hover::before {
       left: 100%;
     }
-    .grid-btn {
+    .grid-btn-red {
+      background: linear-gradient(90deg, #dc2626, #b91c1c);
+      border: 1px solid #f87171;
       position: relative;
       overflow: hidden;
     }
-    .grid-btn::before {
+    .grid-btn-red::before {
       content: '';
       position: absolute;
       top: 0;
@@ -152,8 +154,33 @@ HTML = '''
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
       transition: left 0.5s ease;
     }
-    .grid-btn:hover::before {
+    .grid-btn-red:hover::before {
       left: 100%;
+    }
+    .grid-btn-red:hover {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+    .grid-btn-blue {
+      background: linear-gradient(90deg, #2563eb, #1e40af);
+      border: 1px solid #60a5fa;
+      position: relative;
+      overflow: hidden;
+    }
+    .grid-btn-blue::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    .grid-btn-blue:hover::before {
+      left: 100%;
+    }
+    .grid-btn-blue:hover {
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
     }
   </style>
 </head>
@@ -175,10 +202,10 @@ HTML = '''
       </button>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+    <div id="buttonGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
       {% for name, url in urls.items() %}
       <button onclick="run('{{name}}','{{url}}')"
-        class="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 py-3 px-4 rounded-lg font-semibold text-white btn-hover grid-btn shadow-md">
+        class="grid-btn-red py-3 px-4 rounded-lg font-semibold text-white btn-hover shadow-md">
         {{ name.upper() }}
       </button>
       {% endfor %}
@@ -201,13 +228,20 @@ let timer;
 function toggle() {
   isDirect = !isDirect;
   const btn = document.getElementById("modeBtn");
+  const gridButtons = document.querySelectorAll("#buttonGrid button");
 
   if (isDirect) {
     btn.textContent = "Màu xanh";
     btn.className = "mode-btn-blue btn-hover btn-pulse";
+    gridButtons.forEach(btn => {
+      btn.className = "grid-btn-blue py-3 px-4 rounded-lg font-semibold text-white btn-hover shadow-md";
+    });
   } else {
     btn.textContent = "Màu đỏ (Mặc định)";
     btn.className = "mode-btn-red btn-hover btn-pulse";
+    gridButtons.forEach(btn => {
+      btn.className = "grid-btn-red py-3 px-4 rounded-lg font-semibold text-white btn-hover shadow-md";
+    });
   }
 
   document.getElementById("result").textContent = "";
