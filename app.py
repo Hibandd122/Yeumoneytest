@@ -21,38 +21,61 @@ HTML = '''
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bypass Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .spinner {
       border: 4px solid rgba(255, 255, 255, 0.1);
-      border-top-color: #f43f5e;
+      border-top-color: #ec4899;
       border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      animation: spin 1s linear infinite;
+      width: 32px;
+      height: 32px;
+      animation: spin 0.8s linear infinite;
       margin: auto;
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    .gradient-bg {
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    }
+    .glow {
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+    }
+    .btn-hover {
+      transition: all 0.3s ease;
+      transform: translateY(0);
+    }
+    .btn-hover:hover {
+      transform: translateY(-2px);
+    }
+    .result-glow {
+      animation: glowPulse 1.5s infinite alternate;
+    }
+    @keyframes glowPulse {
+      0% { text-shadow: 0 0 5px rgba(34, 197, 94, 0.5); }
+      100% { text-shadow: 0 0 15px rgba(34, 197, 94, 0.8); }
+    }
   </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
-  <div class="bg-zinc-800 w-full max-w-xl p-6 rounded-xl shadow-xl space-y-6">
-    <h1 class="text-3xl font-bold text-center text-pink-400">🚀 Bypass Code Generator</h1>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4 font-sans">
+  <div class="bg-gray-800/80 backdrop-blur-lg w-full max-w-2xl p-8 rounded-2xl shadow-2xl space-y-8 glow">
+    <h1 class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 animate-pulse">
+      🚀 Bypass Code Generator
+    </h1>
 
     <div class="flex justify-center">
       <button id="modeBtn" onclick="toggle()"
-        class="px-4 py-2 font-semibold rounded-lg transition text-white bg-red-600 hover:bg-red-700">
+        class="px-6 py-3 font-semibold rounded-lg btn-hover text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900">
         Màu đỏ (Mặc định)
       </button>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
       {% for name, url in urls.items() %}
       <button onclick="run('{{name}}','{{url}}')"
-        class="bg-pink-600 hover:bg-pink-700 py-2 px-3 rounded font-medium transition">
+        class="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 py-3 px-4 rounded-lg font-semibold text-white btn-hover shadow-md">
         {{ name.upper() }}
       </button>
       {% endfor %}
@@ -60,7 +83,7 @@ HTML = '''
 
     <div id="countdown" class="text-center text-yellow-300 text-sm font-semibold hidden"></div>
     <div id="spinner" class="spinner hidden"></div>
-    <div id="result" class="text-center text-lg font-semibold"></div>
+    <div id="result" class="text-center text-xl font-bold"></div>
   </div>
 
 <script>
@@ -73,10 +96,10 @@ function toggle() {
 
   if (isDirect) {
     btn.textContent = "Màu xanh";
-    btn.className = "px-4 py-2 font-semibold rounded-lg transition text-white bg-sky-600 hover:bg-sky-700";
+    btn.className = "px-6 py-3 font-semibold rounded-lg btn-hover text-white bg-gradient-to-r from-sky-600 to-sky-800 hover:from-sky-700 hover:to-sky-900";
   } else {
     btn.textContent = "Màu đỏ (Mặc định)";
-    btn.className = "px-4 py-2 font-semibold rounded-lg transition text-white bg-red-600 hover:bg-red-700";
+    btn.className = "px-6 py-3 font-semibold rounded-lg btn-hover text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900";
   }
 
   document.getElementById("result").textContent = "";
@@ -101,15 +124,15 @@ function run(name, url) {
   .then((d) => {
     if (d.code) {
       result.innerHTML = `✅ Mã: <span class="text-pink-300">${d.code}</span> <span class="text-sm text-gray-400">(${d.duration}s)</span>`;
-      result.className = "text-center font-semibold text-green-400";
+      result.className = "text-center font-bold text-green-400 result-glow";
     } else {
       result.textContent = `❌ ${d.error}`;
-      result.className = "text-center font-semibold text-red-500";
+      result.className = "text-center font-bold text-red-500";
     }
   })
   .catch((e) => {
     result.textContent = "❌ Lỗi: " + e;
-    result.className = "text-center font-semibold text-red-500";
+    result.className = "text-center font-bold text-red-500";
   })
   .finally(() => spinner.classList.add("hidden"));
 }
