@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 import requests, re, time
@@ -7,18 +8,13 @@ CORS(app)  # 🔥 Bật CORS cho tất cả route
 
 URLS = {
     "vn88": "https://vn88sv.com",
-    "m88": "https://bet88ec.com",
+    "m88": "https://bet88ve.com",
     "fb88": "https://fb88dq.com",
-    "bk8": "https://bk8ze.com",
+    "bk8": "https://bk8xo.com",
     "v9bet": "https://v9betho.com",
     "188bet": "https://88betag.com",
-    "w88": "https://165.22.63.250",
+    "w88": "https://w88vt.com",
     "fun88": "https://fun88de.com",
-    "w88abc": "https://w88abc.com",
-    "v9betlg": "https://v9betlg.com",
-    "bk8xo': "https://bk8xo.com",
-    "vn88ie": "https://vn88ie.com",
-    "w88xlm": "https://w88xlm.com"
 }
 
 HTML = '''
@@ -131,30 +127,42 @@ def index():
 
 @app.route('/bypass', methods=['POST'])
 def bypass():
-    data = request.get_json()
+    data = request.get_json(force=True)
     type_value = data.get('type')
+
     if not type_value:
-        return jsonify({'error': 'thiếu type'}), 400
+        return jsonify({'error': 'Thiếu type'}), 400
 
     is_url = type_value.startswith('http://') or type_value.startswith('https://')
-    keyword = type_value if not is_url else None
-    url = type_value if is_url else URLS.get(type_value)
-    if not is_url and keyword not in URLS:
-        return jsonify({'error': 'Tên miền không hợp lệ'}), 400
-    if is_url and not url:
+    base_url = type_value if is_url else URLS.get(type_value)
+    if not base_url:
         return jsonify({'error': 'URL không hợp lệ'}), 400
+    headers = {"referer": base_url}
+    common_data = {
+        "codexnd": "maygayvai",
+        "clk": "1000"
+    }
 
-    base_url = "https://traffic-user.net/"
-    endpoint = "GET_MD.php" if is_url else "GET_MA.php"
-    regex = r'id="layma_me_tfudirect"[^>]*>\s*(\d+)' if is_url else r'id="layma_me_vuatraffic"[^>]*>\s*(\d+)'
-    full_url = f"{base_url}{endpoint}?codexn=maygayvai&url={url}/admin&loai_traffic=https://www.google.com/&clk=1000"
+    # Gửi 2 lần: 1 cho URL chaính, 1 cho /admin
+    data_admin = {**common_data, "url": f"{base_url}/admin", "loai_traffic": base_url}
+
+    endpoint = "data_verify.php" if is_url else "big_verify.php"
+    full_url = f"https://data-abc.com/{endpoint}"
 
     try:
         t = time.time()
-        r = requests.post(full_url, timeout=15)
-        m = re.search(regex, r.text)
-        if m:
-            return jsonify({'code': m.group(1), 'duration': round(time.time()-t, 2)})
-        return jsonify({'error': 'Không tìm thấy mã'}), 400
+        r = requests.post(full_url, params=data_admin, headers=headers, data=data_admin, timeout=15)
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        code1 = soup.find("span", id="layma_me_dataabc")
+        code2 = soup.find("span", id="layma_me_bigdata")
+
+        if code1 or code2:
+            code = (code1 or code2).text.strip()
+            return jsonify({'code': code, 'duration': round(time.time() - t, 2)})
+        else:
+            return jsonify({'error': 'Không tìm thấy mã'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+if __name__ == '__main__':
+    app.run(debug=True)
