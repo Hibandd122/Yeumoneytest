@@ -126,6 +126,7 @@ def index():
     return render_template_string(HTML, urls=URLS)
 
 @app.route('/bypass', methods=['POST'])
+@app.route('/bypass', methods=['POST'])
 def bypass():
     data = request.get_json(force=True)
     type_value = data.get('type')
@@ -137,30 +138,29 @@ def bypass():
     base_url = type_value if is_url else URLS.get(type_value)
     if not base_url:
         return jsonify({'error': 'URL không hợp lệ'}), 400
+
     headers = {"referer": base_url}
     common_data = {
         "codexnd": "maygayvai",
-        "clk": "1000"
+        "clk": "1000",
+        "url": f"{base_url}/admin",
+        "loai_traffic": base_url
     }
-
-    # Gửi 2 lần: 1 cho URL chaính, 1 cho /admin
-    data_admin = {**common_data, "url": f"{base_url}/admin", "loai_traffic": base_url}
 
     endpoint = "data_verify.php" if is_url else "big_verify.php"
     full_url = f"https://data-abc.com/{endpoint}"
 
     try:
         t = time.time()
-        r = requests.post(full_url, params=data_admin, headers=headers, data=data_admin, timeout=15)
-        soup = BeautifulSoup(r.text, "html.parser")
+        r = requests.post(full_url, params=common_data, headers=headers, data=common_data, timeout=15)
 
-        code1 = soup.find("span", id="layma_me_dataabc")
-        code2 = soup.find("span", id="layma_me_bigdata")
+        m1 = re.search(r'id="layma_me_dataabc"[^>]*>\s*(\d+)', r.text)
+        m2 = re.search(r'id="layma_me_bigdata"[^>]*>\s*(\d+)', r.text)
 
-        if code1 or code2:
-            code = (code1 or code2).text.strip()
-            return jsonify({'code': code, 'duration': round(time.time() - t, 2)})
+        if m1 or m2:
+            return jsonify({'code': (m1 or m2).group(1), 'duration': round(time.time() - t, 2)})
         else:
             return jsonify({'error': 'Không tìm thấy mã'}), 400
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
