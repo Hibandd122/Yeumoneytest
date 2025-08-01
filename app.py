@@ -10,7 +10,7 @@ URLS = {
     "m88": "https://bet88ve.com",
     "fb88": "https://fb88dq.com",
     "bk8": "https://bk8xo.com",
-    "v9bet": "https://v9betho.com",
+    "v9bet": "http://v9betlg.com",
     "188bet": "https://88betag.com",
     "w88": "https://w88vt.com",
     "fun88": "https://fun88de.com",
