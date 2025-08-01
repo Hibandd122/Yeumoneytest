@@ -6,13 +6,13 @@ app = Flask(__name__)
 CORS(app)  # 🔥 Bật CORS cho tất cả route
 
 URLS = {
-    "vn88": "https://vn88sv.com",
+    "vn88": "https://vn88ve.com",
     "m88": "https://bet88ve.com",
     "fb88": "https://fb88dq.com",
     "bk8": "https://bk8xo.com",
     "v9bet": "http://v9betlg.com",
-    "188bet": "https://88betag.com",
-    "w88": "https://w88vt.com",
+    "188bet": "https://88betux.com",
+    "w88": "https://w88abc.com",
     "fun88": "https://fun88de.com",
 }
 
