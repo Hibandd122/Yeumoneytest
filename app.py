@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify, render_template_string
+kết hợp from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
-import requests, re, time, threading
+import requests, re, time
 
 app = Flask(__name__)
 CORS(app)  # 🔥 Bật CORS cho tất cả route
+
 URLS = {
     "vn88": "https://vn88sv.com",
     "m88": "https://bet88ve.com",
@@ -14,68 +15,6 @@ URLS = {
     "w88": "https://w88vt.com",
     "fun88": "https://fun88de.com",
 }
-
-# Hàm xác định tên nhà cái từ URL
-def get_brand_from_url(url: str) -> str:
-    url = url.lower()
-    for brand, patterns in {
-        "vn88": ["vn88"],
-        "m88": ["m88", "bet88"],
-        "fb88": ["fb88"],
-        "bk8": ["bk8"],
-        "v9bet": ["v9bet"],
-        "188bet": ["188bet", "88bet"],
-        "w88": ["w88"],
-        "fun88": ["fun88"],
-    }.items():
-        if any(p in url for p in patterns):
-            return brand
-    return "unknown"
-
-# Quét liên tục từ yeumoney.com
-def auto_scan_urls():
-    url = "https://yeumoney.com/quangly/load_nv_nhanh.php"
-    params = {
-        "code": "741ebccaf29c6f54760fa7b1f2e21149",
-        "code_link": "bzPiq"
-    }
-    data = {
-        "user": "hicanh69@gmail.com"
-    }
-    headers = {
-        "Origin": "https://yeumoney.com",
-        "Referer": "https://yeumoney.com/bzPiq",
-        "X-Requested-With": "XMLHttpRequest",
-        "User-Agent": "Mozilla/5.0"
-    }
-    cookies = {
-        "user": "hicanh69@gmail.com",
-        "token": "6424613e7792b9e620874afa71880cbf2cc444d4de644f27b3f128583d73cbb6",
-        "cf_clearance": "dummy_clearance"
-    }
-
-    file_path = "found_links.txt"
-    found = set()
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            found = set(line.strip() for line in f)
-    except:
-        pass
-
-    while True:
-        try:
-            response = requests.post(url, params=params, data=data, headers=headers, cookies=cookies, timeout=10)
-            matches = re.findall(r"setAttribute\('data-clipboard-text',\s*'([^']+)'\)", response.text)
-            for u in matches:
-                if u not in found:
-                    brand = get_brand_from_url(u)
-                    print(f"✅ Found URL: {u} → Thương hiệu: {brand}")
-                    with open(file_path, "a", encoding="utf-8") as f:
-                        f.write(u + "\n")
-                    found.add(u)
-        except Exception as e:
-            print(f"❌ Lỗi khi quét: {e}")
-        time.sleep(5)
 
 HTML = '''
 <!DOCTYPE html>
@@ -423,4 +362,3 @@ def bypass():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-threading.Thread(target=auto_scan_urls, daemon=True).start()
