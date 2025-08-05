@@ -3,7 +3,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 urls = {
-    "vn88": "https://vn88ve.com",
+    "vn88": "https://vn88lu.com",
     "m88": "https://bet88ve.com",
     "fb88": "https://fb88dq.com",
     "bk8": "https://bk8xo.com",
