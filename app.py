@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
 import hashlib
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 import cachetools
 import time
 
@@ -32,8 +32,8 @@ def get_url():
 
 # === CAPTCHA SOLVER CONFIG ===
 API_ENDPOINT = "https://d.data-abc.com/f885cdeaf1/"
-MAX_NONCE = 2_000_000  # Giảm để tốc độ nhanh hơn
-MAX_WORKERS = 20
+MAX_NONCE = 1_000_000
+MAX_WORKERS = 10
 TIMEOUT_PER_CHALLENGE = 100
 cache = cachetools.TTLCache(maxsize=100, ttl=60)
 
@@ -63,7 +63,7 @@ def d(seed: str, length: int) -> str:
 def generate_challenges(token, c, s_len, d_len):
     return [(d(f"{token}{i}", s_len), d(f"{token}{i}d", d_len)) for i in range(1, c + 1)]
 
-def solve_challenge_fast(salt: str, target_hex: str, start_nonce: int, end_nonce: int, timeout: float):
+def solve_challenge(salt: str, target_hex: str, start_nonce: int, end_nonce: int, timeout: float):
     start_time = time.time()
     target_bytes = bytes.fromhex(target_hex)
     for nonce in range(start_nonce, end_nonce):
@@ -75,12 +75,15 @@ def solve_challenge_fast(salt: str, target_hex: str, start_nonce: int, end_nonce
             return nonce
     return None
 
-def parallel_solve(salt: str, target_hex: str, max_attempts=MAX_NONCE):
-    chunk_size = max_attempts // MAX_WORKERS
-    tasks = [(salt, target_hex, i * chunk_size, (i + 1) * chunk_size, TIMEOUT_PER_CHALLENGE) for i in range(MAX_WORKERS)]
-    with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        results = executor.map(lambda p: solve_challenge_fast(*p), tasks)
-        for result in results:
+def thread_solve(salt: str, target_hex: str):
+    chunk_size = MAX_NONCE // MAX_WORKERS
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = [
+            executor.submit(solve_challenge, salt, target_hex, i * chunk_size, (i + 1) * chunk_size, TIMEOUT_PER_CHALLENGE)
+            for i in range(MAX_WORKERS)
+        ]
+        for future in futures:
+            result = future.result()
             if result is not None:
                 return result
     return None
@@ -115,7 +118,7 @@ def solve():
 
     try:
         with ThreadPoolExecutor(max_workers=c) as executor:
-            futures = [executor.submit(parallel_solve, salt, target_hex) for salt, target_hex in challenges]
+            futures = [executor.submit(thread_solve, salt, target_hex) for salt, target_hex in challenges]
             solutions = [f.result() for f in futures]
 
         if any(s is None for s in solutions):
