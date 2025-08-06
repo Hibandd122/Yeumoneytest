@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer } from "http";
 import { parse } from "url";
-import { runWorkerLogic } from "../lib/solve.js";
+import { runWorkerLogic } from "api/lib/solve.js";
 
 const app = express();
 app.use(express.json());
