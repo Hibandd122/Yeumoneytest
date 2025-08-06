@@ -33,9 +33,10 @@ def get_url():
 
 # ===== CAPTCHA SOLVER CONFIG =====
 API_ENDPOINT = "https://d.data-abc.com/f885cdeaf1/"
-MAX_NONCE = 5_000_000  # có thể tăng lên nếu cần
-WORKERS = cpu_count()
+MAX_NONCE = 5_000_000
+WORKERS = cpu_count()  # tự động lấy số core CPU
 
+# =================== HÀM HASH & GIẢI ===================
 
 def d(seed: str, length: int) -> str:
     def fnv1a_32(s):
@@ -53,64 +54,69 @@ def d(seed: str, length: int) -> str:
         return state & 0xFFFFFFFF
 
     state = fnv1a_32(seed)
-    result = []
-    while len("".join(result)) < length:
+    out = ""
+    while len(out) < length:
         state = rng(state)
-        result.append(hex(state)[2:].rjust(8, '0'))
-    return "".join(result)[:length]
+        out += hex(state)[2:].rjust(8, '0')
+    return out[:length]
 
 
-def generate_challenges(token, c, s_len, d_len):
-    return [(d(f"{token}{i}", s_len), d(f"{token}{i}d", d_len)) for i in range(1, c + 1)]
+def generate_challenges(token, c, s, d_):
+    return [(d(f"{token}{i}", s), d(f"{token}{i}d", d_)) for i in range(1, c + 1)]
 
 
-def solve_challenge(salt: str, target_hex: str, max_attempts=MAX_NONCE):
+def solve_single_challenge(args):
+    salt, target_hex = args
     target_bytes = bytes.fromhex(target_hex)
-    for nonce in range(max_attempts):
+    for nonce in range(MAX_NONCE):
         trial = f"{salt}{nonce}".encode()
         h = hashlib.sha256(trial).digest()
         if h[:len(target_bytes)] == target_bytes:
             return nonce
     return None
 
+# =================== ROUTE SOLVE ===================
 
 @app.route("/solve", methods=["POST"])
 def solve():
     session = requests.Session()
 
-    # STEP 1: Get challenge
+    # Step 1: Lấy challenge
     try:
         res = session.post(API_ENDPOINT + "challenge", json={})
         res.raise_for_status()
     except Exception as e:
-        return jsonify({"success": False, "error": f"Challenge fetch failed: {e}"}), 500
+        return jsonify({"success": False, "error": f"Lỗi lấy challenge: {e}"}), 500
 
-    try:
-        data = res.json()
-        token = data["token"]
-        challenge = data["challenge"]
-        c, s_len, d_len = challenge["c"], challenge["s"], challenge["d"]
-    except Exception as e:
-        return jsonify({"success": False, "error": f"Invalid challenge format: {e}"}), 500
+    data = res.json()
+    token = data["token"]
+    challenge = data["challenge"]
+    c, s_len, d_len = challenge["c"], challenge["s"], challenge["d"]
 
     challenges = generate_challenges(token, c, s_len, d_len)
 
-    # STEP 2: Solve using multiprocessing
-    try:
-        with Pool(processes=WORKERS) as pool:
-            solutions = pool.starmap(solve_challenge, challenges)
-    except Exception as e:
-        return jsonify({"success": False, "error": f"Solving error: {e}"}), 500
+    # Step 2: Giải challenge bằng multiprocessing
+    start_time = time.time()
+    with Pool(processes=WORKERS) as pool:
+        solutions = pool.map(solve_single_challenge, challenges)
+    duration = time.time() - start_time
 
     if any(s is None for s in solutions):
-        return jsonify({"success": False, "error": "Some challenges could not be solved"}), 500
+        return jsonify({"success": False, "error": "Không giải được 1 số challenge"}), 500
 
-    # STEP 3: Redeem
+    # Step 3: Gửi redeem
     try:
         redeem = session.post(API_ENDPOINT + "redeem", json={"token": token, "solutions": solutions})
         redeem.raise_for_status()
     except Exception as e:
-        return jsonify({"success": False, "error": f"Redeem failed: {e}"}), 500
+        return jsonify({"success": False, "error": f"Lỗi redeem: {e}"}), 500
 
     result = redeem.json()
-    return jsonify({"success": True, "redeem": result})
+    return jsonify({
+        "success": True,
+        "redeem": result,
+        "solving_time_sec": round(duration, 2),
+        "used_cores": WORKERS
+    })
+
+
