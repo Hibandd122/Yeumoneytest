@@ -5,8 +5,6 @@ import hashlib
 from concurrent.futures import ThreadPoolExecutor
 import cachetools
 import time
-import threading
-import queue
 
 app = Flask(__name__)
 CORS(app)
@@ -42,10 +40,6 @@ TIMEOUT_PER_CHALLENGE = 10
 
 # Cache với TTL 60 giây
 cache = cachetools.TTLCache(maxsize=100, ttl=60)
-
-# Hàng đợi lưu trữ token và thông tin challenge
-token_queue = queue.Queue()
-token_lock = threading.Lock()
 
 def d(seed: str, length: int) -> str:
     def fnv1a_32(s):
@@ -98,55 +92,28 @@ def parallel_solve(salt: str, target_hex: str, max_attempts=MAX_NONCE):
                 return result
     return None
 
-def fetch_new_token():
-    session = requests.Session()
-    try:
-        res = session.post(API_ENDPOINT + "challenge", json={}, timeout=5)
-        res.raise_for_status()
-        data = res.json()
-        return {"token": data["token"], "challenge": data["challenge"], "session": session}
-    except Exception as e:
-        print(f"Failed to fetch token: {e}")
-        return None
-
-def maintain_tokens():
-    # Khởi tạo 2 token ban đầu
-    for _ in range(2):
-        token_data = fetch_new_token()
-        if token_data:
-            token_queue.put(token_data)
-    
-    # Làm mới token mỗi phút
-    while True:
-        time.sleep(60)
-        with token_lock:
-            # Xóa hàng đợi và tạo lại 2 token mới
-            while not token_queue.empty():
-                token_queue.get()
-            for _ in range(2):
-                token_data = fetch_new_token()
-                if token_data:
-                    token_queue.put(token_data)
-
 @app.route("/solve", methods=["POST"])
 def solve():
     start_time = time.time()
+    session = requests.Session()
 
-    # Lấy token từ hàng đợi
-    with token_lock:
-        if token_queue.empty():
-            return jsonify({"success": False, "error": "No tokens available"}), 503
-        token_data = token_queue.get()
+    # STEP 1: Lấy token mới
+    try:
+        res = session.post(API_ENDPOINT + "challenge", json={}, timeout=5)
+        res.raise_for_status()
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Challenge fetch failed: {e}"}), 500
 
-    token = token_data["token"]
-    challenge = token_data["challenge"]
-    session = token_data["session"]
-
-    # Tạo token mới để thay thế
-    threading.Thread(target=lambda: token_queue.put(fetch_new_token())).start()
+    try:
+        data = res.json()
+        token = data["token"]
+        challenge = data["challenge"]
+        c, s_len, d_len = challenge["c"], challenge["s"], challenge["d"]
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Invalid challenge format: {e}"}), 500
 
     # Kiểm tra cache
-    cache_key = f"{token}:{challenge['c']}:{challenge['s']}:{challenge['d']}"
+    cache_key = f"{token}:{c}:{s_len}:{d_len}"
     if cache_key in cache:
         return jsonify({"success": True, "redeem": cache[cache_key]})
 
@@ -154,9 +121,9 @@ def solve():
     if time.time() - start_time > 50:
         return jsonify({"success": False, "error": "Not enough time to solve challenges"}), 500
 
-    challenges = generate_challenges(token, challenge["c"], challenge["s"], challenge["d"])
+    challenges = generate_challenges(token, c, s_len, d_len)
 
-    # Giải các challenge
+    # STEP 2: Giải các challenge
     try:
         solutions = []
         for salt, target_hex in challenges:
@@ -169,7 +136,7 @@ def solve():
     except Exception as e:
         return jsonify({"success": False, "error": f"Solving error: {e}"}), 500
 
-    # Redeem
+    # STEP 3: Redeem
     try:
         redeem = session.post(API_ENDPOINT + "redeem", json={"token": token, "solutions": solutions}, timeout=5)
         redeem.raise_for_status()
@@ -179,8 +146,3 @@ def solve():
     result = redeem.json()
     cache[cache_key] = result
     return jsonify({"success": True, "redeem": result})
-
-if __name__ == "__main__":
-    # Khởi động luồng làm mới token
-    threading.Thread(target=maintain_tokens, daemon=True).start()
-    app.run(debug=True)
