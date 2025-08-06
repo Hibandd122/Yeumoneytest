@@ -2,14 +2,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
 import hashlib
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import cachetools
 import time
 
 app = Flask(__name__)
 CORS(app)
 
-# ===== URL MAP =====
 urls = {
     "vn88": "https://vn88zu.com",
     "m88": "https://bet88ve.com",
@@ -26,21 +25,19 @@ urls = {
 def get_url():
     data = request.json
     site_name = data.get("site", "").lower().strip()
-
     for name, url in urls.items():
         if site_name in name.lower():
             return jsonify(url)
     return "Site not found", 404
 
-# ===== CAPTCHA SOLVER CONFIG =====
+# === CAPTCHA SOLVER CONFIG ===
 API_ENDPOINT = "https://d.data-abc.com/f885cdeaf1/"
-MAX_NONCE = 5_000_000
-MAX_WORKERS = 10
+MAX_NONCE = 2_000_000  # Giảm để tốc độ nhanh hơn
+MAX_WORKERS = 20
 TIMEOUT_PER_CHALLENGE = 100
-
-# Cache với TTL 60 giây
 cache = cachetools.TTLCache(maxsize=100, ttl=60)
 
+# ==== UTILS ====
 def d(seed: str, length: int) -> str:
     def fnv1a_32(s):
         h = 0x811c9dc5
@@ -66,27 +63,23 @@ def d(seed: str, length: int) -> str:
 def generate_challenges(token, c, s_len, d_len):
     return [(d(f"{token}{i}", s_len), d(f"{token}{i}d", d_len)) for i in range(1, c + 1)]
 
-def solve_challenge(salt: str, target_hex: str, start_nonce: int, end_nonce: int, timeout: float):
+def solve_challenge_fast(salt: str, target_hex: str, start_nonce: int, end_nonce: int, timeout: float):
     start_time = time.time()
     target_bytes = bytes.fromhex(target_hex)
-    sha = hashlib.sha256()
     for nonce in range(start_nonce, end_nonce):
         if time.time() - start_time > timeout:
             return None
         trial = f"{salt}{nonce}".encode()
-        sha.update(trial)
-        h = sha.digest()
+        h = hashlib.sha256(trial).digest()
         if h[:len(target_bytes)] == target_bytes:
             return nonce
-        sha = hashlib.sha256()
     return None
 
 def parallel_solve(salt: str, target_hex: str, max_attempts=MAX_NONCE):
     chunk_size = max_attempts // MAX_WORKERS
     tasks = [(salt, target_hex, i * chunk_size, (i + 1) * chunk_size, TIMEOUT_PER_CHALLENGE) for i in range(MAX_WORKERS)]
-    
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        results = executor.map(lambda p: solve_challenge(*p), tasks)
+    with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        results = executor.map(lambda p: solve_challenge_fast(*p), tasks)
         for result in results:
             if result is not None:
                 return result
@@ -97,7 +90,6 @@ def solve():
     start_time = time.time()
     session = requests.Session()
 
-    # STEP 1: Lấy token mới
     try:
         res = session.post(API_ENDPOINT + "challenge", json={}, timeout=5)
         res.raise_for_status()
@@ -112,31 +104,27 @@ def solve():
     except Exception as e:
         return jsonify({"success": False, "error": f"Invalid challenge format: {e}"}), 500
 
-    # Kiểm tra cache
     cache_key = f"{token}:{c}:{s_len}:{d_len}"
     if cache_key in cache:
         return jsonify({"success": True, "redeem": cache[cache_key]})
 
-    # Kiểm tra thời gian
     if time.time() - start_time > 50:
         return jsonify({"success": False, "error": "Not enough time to solve challenges"}), 500
 
     challenges = generate_challenges(token, c, s_len, d_len)
 
-    # STEP 2: Giải các challenge
     try:
-        solutions = []
-        for salt, target_hex in challenges:
-            result = parallel_solve(salt, target_hex)
-            if result is None:
-                return jsonify({"success": False, "error": "Some challenges could not be solved"}), 500
-            solutions.append(result)
-            if time.time() - start_time > 50:
-                return jsonify({"success": False, "error": "Time limit exceeded during solving"}), 500
+        with ThreadPoolExecutor(max_workers=c) as executor:
+            futures = [executor.submit(parallel_solve, salt, target_hex) for salt, target_hex in challenges]
+            solutions = [f.result() for f in futures]
+
+        if any(s is None for s in solutions):
+            return jsonify({"success": False, "error": "Some challenges could not be solved"}), 500
+        if time.time() - start_time > 50:
+            return jsonify({"success": False, "error": "Time limit exceeded during solving"}), 500
     except Exception as e:
         return jsonify({"success": False, "error": f"Solving error: {e}"}), 500
 
-    # STEP 3: Redeem
     try:
         redeem = session.post(API_ENDPOINT + "redeem", json={"token": token, "solutions": solutions}, timeout=5)
         redeem.raise_for_status()
