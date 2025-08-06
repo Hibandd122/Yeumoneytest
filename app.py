@@ -35,8 +35,8 @@ def get_url():
 # ===== CAPTCHA SOLVER CONFIG =====
 API_ENDPOINT = "https://d.data-abc.com/f885cdeaf1/"
 MAX_NONCE = 5_000_000
-MAX_WORKERS = 8
-TIMEOUT_PER_CHALLENGE = 10
+MAX_WORKERS = 10
+TIMEOUT_PER_CHALLENGE = 100
 
 # Cache với TTL 60 giây
 cache = cachetools.TTLCache(maxsize=100, ttl=60)
