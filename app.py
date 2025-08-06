@@ -1,10 +1,13 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import requests
 import hashlib
-from concurrent.futures import ThreadPoolExecutor
-from flask_cors import CORS
+from multiprocessing import Pool, cpu_count
+
 app = Flask(__name__)
 CORS(app)
+
+# ===== URL MAP =====
 urls = {
     "vn88": "https://vn88zu.com",
     "m88": "https://bet88ve.com",
@@ -25,13 +28,14 @@ def get_url():
     for name, url in urls.items():
         if site_name in name.lower():
             return jsonify(url)  # chỉ trả về chuỗi URL
-
     return "Site not found", 404
 
-# === CẤU HÌNH ===
+
+# ===== CAPTCHA SOLVER CONFIG =====
 API_ENDPOINT = "https://d.data-abc.com/f885cdeaf1/"
-MAX_NONCE = 5_000_000
-WORKERS = 8
+MAX_NONCE = 5_000_000  # có thể tăng lên nếu cần
+WORKERS = cpu_count()
+
 
 def d(seed: str, length: int) -> str:
     def fnv1a_32(s):
@@ -49,14 +53,16 @@ def d(seed: str, length: int) -> str:
         return state & 0xFFFFFFFF
 
     state = fnv1a_32(seed)
-    out = ""
-    while len(out) < length:
+    result = []
+    while len("".join(result)) < length:
         state = rng(state)
-        out += hex(state)[2:].rjust(8, '0')
-    return out[:length]
+        result.append(hex(state)[2:].rjust(8, '0'))
+    return "".join(result)[:length]
 
-def generate_challenges(token, c, s, d_):
-    return [(d(f"{token}{i}", s), d(f"{token}{i}d", d_)) for i in range(1, c + 1)]
+
+def generate_challenges(token, c, s_len, d_len):
+    return [(d(f"{token}{i}", s_len), d(f"{token}{i}d", d_len)) for i in range(1, c + 1)]
+
 
 def solve_challenge(salt: str, target_hex: str, max_attempts=MAX_NONCE):
     target_bytes = bytes.fromhex(target_hex)
@@ -67,32 +73,39 @@ def solve_challenge(salt: str, target_hex: str, max_attempts=MAX_NONCE):
             return nonce
     return None
 
+
 @app.route("/solve", methods=["POST"])
 def solve():
     session = requests.Session()
 
-    # Step 1: get challenge
+    # STEP 1: Get challenge
     try:
         res = session.post(API_ENDPOINT + "challenge", json={})
         res.raise_for_status()
     except Exception as e:
         return jsonify({"success": False, "error": f"Challenge fetch failed: {e}"}), 500
 
-    data = res.json()
-    token = data["token"]
-    challenge = data["challenge"]
-    c, s_len, d_len = challenge["c"], challenge["s"], challenge["d"]
+    try:
+        data = res.json()
+        token = data["token"]
+        challenge = data["challenge"]
+        c, s_len, d_len = challenge["c"], challenge["s"], challenge["d"]
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Invalid challenge format: {e}"}), 500
 
     challenges = generate_challenges(token, c, s_len, d_len)
 
-    # Step 2: solve in thread pool
-    with ThreadPoolExecutor(max_workers=WORKERS) as executor:
-        solutions = list(executor.map(lambda ch: solve_challenge(*ch), challenges))
+    # STEP 2: Solve using multiprocessing
+    try:
+        with Pool(processes=WORKERS) as pool:
+            solutions = pool.starmap(solve_challenge, challenges)
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Solving error: {e}"}), 500
 
     if any(s is None for s in solutions):
         return jsonify({"success": False, "error": "Some challenges could not be solved"}), 500
 
-    # Step 3: redeem
+    # STEP 3: Redeem
     try:
         redeem = session.post(API_ENDPOINT + "redeem", json={"token": token, "solutions": solutions})
         redeem.raise_for_status()
@@ -101,6 +114,3 @@ def solve():
 
     result = redeem.json()
     return jsonify({"success": True, "redeem": result})
-
-if __name__ == "__main__":
-    app.run(debug=True)
