@@ -10,7 +10,7 @@ urls = {
     "fb88": "https://fb88dq.com",
     "bk8": "https://bk8hn.com",
     "v9bet": "http://v9betlg.com",
-    "188bet": "https://88betux.com",
+    "188bet": "https://88betvb.com",
     "w88": "https://w88abc.com",
     "w88xlm": "https://w88xlm.com"
 }
