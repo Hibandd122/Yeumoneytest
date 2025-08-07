@@ -5,10 +5,10 @@ app = Flask(__name__)
 CORS(app)
 
 urls = {
-    "vn88": "https://vn88zu.com",
+    "vn88": "https://vn88fu.com",
     "m88": "https://bet88ve.com",
     "fb88": "https://fb88dq.com",
-    "bk8": "https://bk8hn.com",
+    "bk8": "https://bk8ly.com",
     "v9bet": "http://v9betlg.com",
     "188bet": "https://88betvb.com",
     "w88": "https://w88abc.com",
