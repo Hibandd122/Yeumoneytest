@@ -1,2 +1,7 @@
+requests
+beautifulsoup4
+pycryptodome
+numpy
+opencv-python-headless
 flask
 flask-cors
