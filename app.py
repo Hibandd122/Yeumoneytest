@@ -27,6 +27,11 @@ urls = {
     "w88": "https://w88abc.com",
     "w88xlm": "https://w88xlm.com"
 }
+app = Flask(__name__)
+CORS(app)  # Enable CORS cho tất cả route
+
+tasks_status = {}
+tasks_result = {}
 class SlideSolver:
     def __init__(self, puzzle_piece, background):
         self.background = self._read_image(background)
@@ -358,7 +363,11 @@ def wait_for_captcha(currentUrl, session, url, headers, max_attempts=10):
         countdown = int(span.get("data-countdown", "30"))
         finish = span.get("data-finish", "")
 
-        time.sleep(countdown)
+        print(f"Lần {attempt+1}: token={token[:10]}..., đợi {countdown}s, finish={finish}")
+        for sec in range(countdown, 0, -1):
+            print(f"\rĐang đợi: {sec} giây...", end="", flush=True)
+            time.sleep(1)
+        print()
 
         if finish == "captcha":
             # Gửi thêm lần cuối lấy div captcha
@@ -404,14 +413,7 @@ def main(currentUrl, url):
     else:
         print("Không tìm thấy mã captcha trong response cuối.")
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS cho tất cả route
-
-tasks_status = {}
-tasks_result = {}
-
 def cleanup_task(task_id, delay=60):
-    """Xoá task sau delay giây"""
     time.sleep(delay)
     tasks_status.pop(task_id, None)
     tasks_result.pop(task_id, None)
@@ -479,4 +481,5 @@ def get_status():
         response["captcha_code"] = tasks_result.get(task_id, None)
 
     return jsonify(response)
-
+if __name__ == "__main__":
+    app.run(debug=True)
