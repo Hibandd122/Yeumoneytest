@@ -337,7 +337,7 @@ class Geeked:
         return seccode
 @app.route('/post-captcha', methods=['POST'])
 def post_captcha():
-    data = request.json or {}
+    data = request.get_json(force=True, silent=True) or request.form or {}
     captcha_id = data.get('captcha_id')
     if not captcha_id:
         return jsonify({"error": "Missing captcha_id"}), 400
