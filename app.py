@@ -22,6 +22,12 @@ def get_url():
         return jsonify({"url": url})
 
     return jsonify({"error": "Site not found"}), 404
-@app.route('/Bypass.js')
+@app.route('/Bypass.js', methods=["GET", "POST"])
 def bypass_js():
-    return send_from_directory('Bypass.js')
+    with open('Bypass.js', 'r', encoding='utf-8') as f:
+        js_code = f.read()
+    if request.method == "POST":
+        # Có thể xử lý data nếu muốn, nhưng vẫn trả về js_code
+        return js_code, 200, {"Content-Type": "application/javascript"}
+    else:
+        return js_code, 200, {"Content-Type": "application/javascript"}
