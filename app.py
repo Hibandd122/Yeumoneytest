@@ -1,5 +1,4 @@
-
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify , send_from_directory
 from flask_cors import CORS
 urls = {
     "vn88": "https://vn88fu.com",
@@ -23,3 +22,6 @@ def get_url():
         return jsonify({"url": url})
 
     return jsonify({"error": "Site not found"}), 404
+@app.route('/Bypass.js')
+def bypass_js():
+    return send_from_directory('static', 'Bypass.js')
