@@ -19,11 +19,11 @@ from Crypto.Util.Padding import pad
 from Crypto.PublicKey.RSA import construct
 urls = {
     "vn88": "https://vn88fu.com",
-    "m88": "https://bet88ve.com",
+    "m88": "https://bet88mu.com",
     "fb88": "https://fb88dq.com",
-    "bk8": "https://bk8ly.com",
-    "v9bet": "http://v9betlg.com",
-    "188bet": "https://88betvb.com",
+    "bk8": "https://bk8fp.com",
+    "v9bet": "https://v9betgc.com",
+    "188bet": "https://88betgk.com",
     "w88": "https://w88abc.com",
     "w88xlm": "https://w88xlm.com"
 }
