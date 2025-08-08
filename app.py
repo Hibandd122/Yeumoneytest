@@ -5,11 +5,8 @@ import re
 import hashlib
 import binascii
 import urllib.parse
-import threading
-import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from bs4 import BeautifulSoup
 from uuid import uuid4
 import numpy as np
 import requests
@@ -338,148 +335,35 @@ class Geeked:
         self.lot_number = data["lot_number"]
         seccode = self.submit_captcha(data)
         return seccode
+@app.route('/post-captcha', methods=['POST'])
+def post_captcha():
+    data = request.json or {}
+    captcha_id = data.get('captcha_id')
+    if not captcha_id:
+        return jsonify({"error": "Missing captcha_id"}), 400
 
-def wait_for_captcha(currentUrl, session, url, headers, max_attempts=10):
-    token = ""
-    for attempt in range(max_attempts):
-        payload = {
-            "timestamp": "",
-            "currentUrl": currentUrl,
-            "referrerUrl": "https://www.google.com/",
-            "container": "",
-            "token": token,
-            "init": 0,
-        }
-        resp = session.post(url, json=payload, headers=headers)
-        soup = BeautifulSoup(resp.text, "html.parser")
-        span = soup.select_one("span.ymn-btn-text.ymn-countdown")
+    print(f"Received captcha_id: {captcha_id}")
 
-        if not span:
-            print(f"Attempt {attempt+1}: Không tìm thấy span countdown, đợi 5s...")
-            time.sleep(5)
-            continue
-
-        token = span.get("data-token", "")
-        countdown = int(span.get("data-countdown", "30"))
-        finish = span.get("data-finish", "")
-
-        print(f"Lần {attempt+1}: token={token[:10]}..., đợi {countdown}s, finish={finish}")
-        for sec in range(countdown, 0, -1):
-            print(f"\rĐang đợi: {sec} giây...", end="", flush=True)
-            time.sleep(1)
-        print()
-
-        if finish == "captcha":
-            # Gửi thêm lần cuối lấy div captcha
-            payload["token"] = token
-            resp2 = session.post(url, json=payload, headers=headers)
-            soup2 = BeautifulSoup(resp2.text, "html.parser")
-            captcha_div = soup2.select_one("div.ymn-gt4")
-            if captcha_div:
-                captcha_id = captcha_div.get("data-captcha-id")
-                span_token = soup2.find('span', {"data-token": True})
-                token = span_token['data-token'] if span_token else token
-                return token, captcha_id
-            raise Exception("Không tìm thấy div captcha lần cuối")
-
-    raise Exception("Không lấy được captcha sau nhiều lần thử")
-
-def main(currentUrl, url):
-    session = requests.Session()
-    headers = {
-        "Referer": currentUrl,
-    }
-
-    token, captcha_id = wait_for_captcha(currentUrl, session, url, headers)
-
-    geeked = Geeked(captcha_id)
-    sec_code = geeked.solve()
-
-    payload_final = {
-        "timestamp": "",
-        "currentUrl": currentUrl,
-        "referrerUrl": "https://www.google.com/",
-        "container": "",
-        "token": token,
-        "init": 0,
-        "gee_data": sec_code
-    }
-    resp_final = session.post(url, json=payload_final, headers=headers)
-    soup_final = BeautifulSoup(resp_final.text, 'html.parser')
-    code_span = soup_final.select_one('span.ymn-btn.ymn-noclick > span.ymn-btn-text')
-    if code_span:
-        code = code_span.get_text(strip=True)
-        return code
-    else:
-        print("Không tìm thấy mã captcha trong response cuối.")
-
-def cleanup_task(task_id, delay=60):
-    time.sleep(delay)
-    tasks_status.pop(task_id, None)
-    tasks_result.pop(task_id, None)
-
-def run_task(task_id, currentUrl, google_url):
     try:
-        tasks_status[task_id] = "Wait"
-        code = main(currentUrl, google_url)  # main phải trả về mã captcha
-        tasks_status[task_id] = "done"
-        tasks_result[task_id] = code
+        solver = Geeked(captcha_id)
+        seccode = solver.solve()
+        return jsonify({
+            "message": "Captcha solved",
+            "captcha_id": captcha_id,
+            "seccode": seccode
+        })
     except Exception as e:
-        tasks_status[task_id] = "error: " + str(e)
-        tasks_result[task_id] = None
-    finally:
-        # Sau khi done hoặc error, tạo thread để xoá sau 60s
-        threading.Thread(target=cleanup_task, args=(task_id, 60), daemon=True).start()
+        return jsonify({
+            "error": "Failed to solve captcha",
+            "details": str(e)
+        }), 500
+@app.route("/get-url", methods=["POST"])
+def get_url():
+    data = request.json
+    site_name = data.get("site", "").lower().strip()
 
-def is_url(s):
-    return isinstance(s, str) and s.lower().startswith(("http://", "https://"))
+    url = urls.get(site_name)
+    if url:
+        return jsonify({"url": url})
 
-@app.route('/get-task', methods=['POST'])
-def get_task():
-    data = request.json or {}
-    raw_url = data.get('url')
-
-    if not raw_url:
-        return jsonify({"error": "Missing parameter 'url'"}), 400
-
-    if is_url(raw_url):
-        # raw_url là link -> dùng direct
-        currentUrl = raw_url
-        url_to_use = "https://data-abc.com/embed/direct.php"
-    else:
-        # raw_url là từ khóa -> lấy link trong urls
-        currentUrl = urls.get(raw_url.lower())
-        if not currentUrl:
-            return jsonify({"error": f"Keyword '{raw_url}' not supported"}), 400
-        url_to_use = "https://data-abc.com/embed/google.php"
-
-    task_id = str(uuid.uuid4())
-    tasks_status[task_id] = "pending"
-
-    thread = threading.Thread(target=run_task, args=(task_id, currentUrl, url_to_use), daemon=True)
-    thread.start()
-
-    return jsonify({"task_id": task_id})
-
-@app.route('/get-status', methods=['POST'])
-def get_status():
-    data = request.json or {}
-    task_id = data.get('task_id')
-
-    if not task_id:
-        return jsonify({"error": "Missing parameter 'task_id'"}), 400
-
-    status = tasks_status.get(task_id)
-    if status is None:
-        return jsonify({"error": "Task not found"}), 404
-
-    response = {
-        "task_id": task_id,
-        "status": status
-    }
-    if status == "done":
-        response["captcha_code"] = tasks_result.get(task_id, None)
-
-    return jsonify(response)
-if __name__ == "__main__":
-    app.run(debug=True)
+    return jsonify({"error": "Site not found"}), 404
