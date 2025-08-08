@@ -24,4 +24,4 @@ def get_url():
     return jsonify({"error": "Site not found"}), 404
 @app.route('/Bypass.js', methods=["GET"])
 def bypass_js():
-    return send_from_directory('static', 'Bypass.js', mimetype='application/javascript')
+    return send_from_directory('Bypass.js', mimetype='application/javascript')
