@@ -45,5 +45,4 @@ def get_url():
         return jsonify({"url": final_url})
     return jsonify({"error": "Site not found"}), 404
 
-if __name__ == "__main__":
-    threading.Thread(target=monitor_urls, daemon=True).start()
+monitor_urls()
