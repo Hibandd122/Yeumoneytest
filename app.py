@@ -47,4 +47,3 @@ def get_url():
 
 if __name__ == "__main__":
     threading.Thread(target=monitor_urls, daemon=True).start()
-    app.run(host="0.0.0.0", port=5000)
