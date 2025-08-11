@@ -1,11 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import time
-import threading
 import requests
+import time
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS cho tất cả route
+CORS(app)
 
 urls = {
     "vn88": "https://vn88fu.com",
@@ -21,28 +20,30 @@ urls = {
 headers = {"User-Agent": "Mozilla/5.0"}
 last_results = {}
 
-def monitor_urls():
-    while True:
-        for name, url in urls.items():
-            try:
-                r = requests.get(url, headers=headers, timeout=10)
-                final_url = r.url
-                if last_results.get(name) != final_url:
-                    last_results[name] = final_url
-                    print(f"[{name}] đổi thành: {final_url}")
-                    with open("changed_urls.txt", "a", encoding="utf-8") as f:
-                        f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {name}: {final_url}\n")
-            except requests.RequestException as e:
-                print(f"[{name}] lỗi: {e}")
-        time.sleep(5)
+def check_url(site_name):
+    url = urls.get(site_name)
+    if not url:
+        return None
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        final_url = r.url
+        last_results[site_name] = final_url
+        return final_url
+    except:
+        return None
 
 @app.route("/get-url", methods=["POST"])
 def get_url():
     data = request.json
     site_name = data.get("site", "").lower().strip()
-    final_url = last_results.get(site_name)
+    final_url = check_url(site_name)
     if final_url:
         return jsonify({"url": final_url})
     return jsonify({"error": "Site not found"}), 404
 
-monitor_urls()
+@app.route("/get-all", methods=["GET"])
+def get_all():
+    result = {}
+    for name in urls:
+        result[name] = check_url(name)
+    return jsonify(result)
